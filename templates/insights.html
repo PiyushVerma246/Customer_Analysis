@@ -93,25 +93,22 @@
               </thead>
               <tbody>
                 {% for s in sample %}
-                <tr style="cursor:pointer;" onclick="document.getElementById('customerIdInput').value='{{ s.CustomerID }}'; document.getElementById('searchForm').submit();">
-                  <td style="color:#a5b4fc; font-weight:700;">{{ s.CustomerID }}</td>
+                <tr class="sample-row" data-cid="{{ s.CustomerID }}">
+                  <td class="fw-bold sample-id">{{ s.CustomerID }}</td>
                   <td>
-                    <span class="seg-badge
-                      {% if s.Segment == 'VIP' %}seg-vip
-                      {% elif s.Segment == 'Regular' %}seg-reg
-                      {% else %}seg-risk{% endif %}">
+                    <span class="seg-badge {% if s.Segment == 'VIP' %}seg-vip{% elif s.Segment == 'Regular' %}seg-reg{% else %}seg-risk{% endif %}">
                       <span class="dot"></span>{{ s.Segment }}
                     </span>
                   </td>
                   <td>{{ s.Recency }}</td>
                   <td>{{ s.Frequency }}</td>
-                  <td>£{{ "%.2f"|format(s.Monetary) }}</td>
+                  <td>₹{{ "%.2f"|format(s.Monetary) }}</td>
                 </tr>
                 {% endfor %}
               </tbody>
             </table>
           </div>
-          <p style="font-size:.72rem; color:#475569; margin-top:.75rem; text-align:center;">
+          <p class="sample-hint">
             <i class="bi bi-hand-index-thumb me-1"></i> Click any row to instantly load that customer
           </p>
         </div>
@@ -129,19 +126,19 @@
 <div class="profile-card mb-4">
   <div class="d-flex align-items-center gap-3 flex-wrap">
     <div class="profile-avatar">
-      <i class="bi {{ customer.icon }}" style="color:white;"></i>
+      <i class="bi {{ customer.icon }}" data-color="white"></i>
     </div>
     <div class="flex-grow-1">
-      <div style="font-size:1.4rem; font-weight:900; color:#f1f5f9; margin-bottom:.3rem;">
+      <div class="profile-name">
         Customer #{{ customer.id }}
       </div>
       <span class="seg-badge {{ customer.seg_class }}">
         <span class="dot"></span>{{ customer.segment }}
       </span>
     </div>
-    <div style="text-align:right;">
-      <div style="font-size:.62rem; color:#475569; text-transform:uppercase; letter-spacing:.09em; margin-bottom:.25rem;">Lifetime Value</div>
-      <div style="font-size:1.65rem; font-weight:900; color:{{ customer.color }};">{{ customer.monetary }}</div>
+    <div class="profile-ltv-block">
+      <div class="profile-ltv-label">Lifetime Value</div>
+      <div class="profile-ltv-value" data-color="{{ customer.color }}">{{ customer.monetary }}</div>
     </div>
   </div>
 </div>
@@ -150,32 +147,32 @@
 <div class="row g-3 mb-4">
   <div class="col-md-4">
     <div class="kpi-card">
-      <div class="kpi-glow" style="background:#06b6d4;"></div>
+      <div class="kpi-glow" data-bg="#06b6d4"></div>
       <span class="kpi-icon">📅</span>
       <div class="kpi-label">Last Purchase</div>
       <div class="kpi-value">{{ customer.recency }}</div>
-      <div class="kpi-delta" style="color:#94a3b8;">days ago</div>
-      <div class="kpi-accent-bar" style="background:linear-gradient(90deg,#06b6d4,transparent);"></div>
+      <div class="kpi-delta">days ago</div>
+      <div class="kpi-accent-bar" data-bg="linear-gradient(90deg,#06b6d4,transparent)"></div>
     </div>
   </div>
   <div class="col-md-4">
     <div class="kpi-card">
-      <div class="kpi-glow" style="background:#a855f7;"></div>
+      <div class="kpi-glow" data-bg="#a855f7"></div>
       <span class="kpi-icon">🔁</span>
       <div class="kpi-label">Total Orders</div>
       <div class="kpi-value">{{ customer.frequency }}</div>
-      <div class="kpi-delta" style="color:#94a3b8;">orders placed</div>
-      <div class="kpi-accent-bar" style="background:linear-gradient(90deg,#a855f7,transparent);"></div>
+      <div class="kpi-delta">orders placed</div>
+      <div class="kpi-accent-bar" data-bg="linear-gradient(90deg,#a855f7,transparent)"></div>
     </div>
   </div>
   <div class="col-md-4">
     <div class="kpi-card">
-      <div class="kpi-glow" style="background:#10b981;"></div>
+      <div class="kpi-glow" data-bg="#10b981"></div>
       <span class="kpi-icon">💰</span>
       <div class="kpi-label">Lifetime Spend</div>
-      <div class="kpi-value" style="font-size:1.5rem;">{{ customer.monetary }}</div>
-      <div class="kpi-delta" style="color:#94a3b8;">cumulative spend</div>
-      <div class="kpi-accent-bar" style="background:linear-gradient(90deg,#10b981,transparent);"></div>
+      <div class="kpi-value kpi-value-sm">{{ customer.monetary }}</div>
+      <div class="kpi-delta">cumulative spend</div>
+      <div class="kpi-accent-bar" data-bg="linear-gradient(90deg,#10b981,transparent)"></div>
     </div>
   </div>
 </div>
@@ -188,40 +185,40 @@
 
       <div class="rfm-item">
         <div class="rfm-header">
-          <span style="color:#94a3b8;">Recency <small>(lower = better)</small></span>
-          <span style="color:#06b6d4; font-weight:700;">{{ customer.recency }} days</span>
+          <span>Recency <small>(lower = better)</small></span>
+          <span class="rfm-val rfm-cyan">{{ customer.recency }} days</span>
         </div>
         <div class="rfm-track">
-          <div class="rfm-fill" style="width:{{ customer.r_pct }}%; background:#06b6d4;"></div>
+          <div class="rfm-fill" data-width="{{ customer.r_pct }}%" data-bg="#06b6d4"></div>
         </div>
       </div>
       <div class="rfm-item">
         <div class="rfm-header">
-          <span style="color:#94a3b8;">Frequency</span>
-          <span style="color:#a855f7; font-weight:700;">{{ customer.frequency }} orders</span>
+          <span>Frequency</span>
+          <span class="rfm-val rfm-purple">{{ customer.frequency }} orders</span>
         </div>
         <div class="rfm-track">
-          <div class="rfm-fill" style="width:{{ customer.f_pct }}%; background:#a855f7;"></div>
+          <div class="rfm-fill" data-width="{{ customer.f_pct }}%" data-bg="#a855f7"></div>
         </div>
       </div>
       <div class="rfm-item">
         <div class="rfm-header">
-          <span style="color:#94a3b8;">Monetary</span>
-          <span style="color:#10b981; font-weight:700;">{{ customer.monetary }}</span>
+          <span>Monetary</span>
+          <span class="rfm-val rfm-green">{{ customer.monetary }}</span>
         </div>
         <div class="rfm-track">
-          <div class="rfm-fill" style="width:{{ customer.m_pct }}%; background:#10b981;"></div>
+          <div class="rfm-fill" data-width="{{ customer.m_pct }}%" data-bg="#10b981"></div>
         </div>
       </div>
 
-      <div class="mt-3 pt-3" style="border-top:1px solid var(--border);">
-        <div style="font-size:.8rem; font-weight:700; color:#f1f5f9; margin-bottom:.7rem;">vs. All Customers (avg)</div>
+      <div class="mt-3 pt-3 stat-compare-block">
+        <div class="stat-compare-title">vs. All Customers (avg)</div>
         <div class="stat-row"><span class="stat-lbl">Recency — this customer</span><span class="stat-val">{{ customer.recency }} days</span></div>
-        <div class="stat-row"><span class="stat-lbl">Recency — average</span><span class="stat-val" style="color:#64748b;">{{ customer.avg_recency }} days</span></div>
+        <div class="stat-row"><span class="stat-lbl">Recency — average</span><span class="stat-val stat-muted">{{ customer.avg_recency }} days</span></div>
         <div class="stat-row"><span class="stat-lbl">Orders — this customer</span><span class="stat-val">{{ customer.frequency }}</span></div>
-        <div class="stat-row"><span class="stat-lbl">Orders — average</span><span class="stat-val" style="color:#64748b;">{{ customer.avg_frequency }}</span></div>
+        <div class="stat-row"><span class="stat-lbl">Orders — average</span><span class="stat-val stat-muted">{{ customer.avg_frequency }}</span></div>
         <div class="stat-row"><span class="stat-lbl">Spend — this customer</span><span class="stat-val">{{ customer.monetary }}</span></div>
-        <div class="stat-row"><span class="stat-lbl">Spend — average</span><span class="stat-val" style="color:#64748b;">{{ customer.avg_monetary }}</span></div>
+        <div class="stat-row"><span class="stat-lbl">Spend — average</span><span class="stat-val stat-muted">{{ customer.avg_monetary }}</span></div>
       </div>
     </div>
   </div>
@@ -232,7 +229,7 @@
       <div id="radarChart" class="chart-wrap"></div>
       <div class="pct-box">
         <div class="pct-box-label">Revenue Percentile</div>
-        <div class="pct-box-value" style="color:{{ customer.color }};">Top {{ customer.top_pct }}%</div>
+        <div class="pct-box-value" data-color="{{ customer.color }}">Top {{ customer.top_pct }}%</div>
         <div class="pct-box-sub">of all customers by spend</div>
       </div>
     </div>
@@ -242,15 +239,12 @@
 <!-- Segment Intelligence -->
 <div class="glass-card">
   <div class="section-title"><i class="bi bi-lightbulb"></i> What This Means</div>
-  <div class="intel-card"
-       style="background:{{ customer.intel.bg }};
-              border:1px solid {{ customer.intel.border }};
-              border-left:3px solid {{ customer.intel.color }};">
-    <div class="intel-icon">
-      <i class="bi {{ customer.intel.icon }}" style="color:{{ customer.intel.color }};"></i>
+  <div class="intel-card" data-bg="{{ customer.intel.bg }}" data-border-left="{{ customer.intel.color }}">
+    <div class="intel-icon" data-color="{{ customer.intel.icon_color }}">
+      <i class="bi {{ customer.intel.icon }}"></i>
     </div>
     <div>
-      <div class="intel-title" style="color:{{ customer.intel.color }};">{{ customer.intel.title }}</div>
+      <div class="intel-title" data-color="{{ customer.intel.color }}">{{ customer.intel.title }}</div>
       <div class="intel-body">{{ customer.intel.body }}</div>
     </div>
   </div>
@@ -261,8 +255,36 @@
 
 {% block page_scripts %}
 {% if customer %}
+<script type="application/json" id="_radarData">{{ customer.chart_radar | safe }}</script>
+{% endif %}
 <script>
-  renderChart('radarChart', {{ customer.chart_radar | tojson }});
+  // Apply all dynamic styles from data-* attributes
+  document.querySelectorAll('[data-bg]').forEach(function(el) {
+    el.style.background = el.getAttribute('data-bg');
+  });
+  document.querySelectorAll('[data-color]').forEach(function(el) {
+    el.style.color = el.getAttribute('data-color');
+  });
+  document.querySelectorAll('[data-width]').forEach(function(el) {
+    el.style.width = el.getAttribute('data-width');
+  });
+  document.querySelectorAll('[data-border-left]').forEach(function(el) {
+    el.style.borderLeft = '3px solid ' + el.getAttribute('data-border-left');
+  });
+
+  // Sample-table click-to-load
+  document.querySelectorAll('.sample-row').forEach(function(row) {
+    row.style.cursor = 'pointer';
+    row.addEventListener('click', function() {
+      var input = document.getElementById('customerIdInput');
+      if (input) { input.value = row.getAttribute('data-cid'); document.getElementById('searchForm').submit(); }
+    });
+  });
+</script>
+
+{% if customer %}
+<script>
+  renderChart('radarChart', document.getElementById('_radarData').textContent);
 </script>
 {% endif %}
 {% endblock %}

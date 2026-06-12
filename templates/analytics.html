@@ -19,130 +19,141 @@
 
 <!-- Tab Navigation -->
 <div class="tab-nav" role="tablist">
-  <button class="tab-btn active" id="tab-overview" data-bs-toggle="tab"
-          data-bs-target="#overview" type="button" role="tab"
-          aria-controls="overview" aria-selected="true">
+  <button class="tab-btn active" id="tab-overview" type="button" role="tab">
     <i class="bi bi-pie-chart"></i> Overview
   </button>
-  <button class="tab-btn" id="tab-rfm" data-bs-toggle="tab"
-          data-bs-target="#rfm" type="button" role="tab"
-          aria-controls="rfm" aria-selected="false">
+  <button class="tab-btn" id="tab-rfm" type="button" role="tab">
     <i class="bi bi-bar-chart"></i> RFM Analysis
   </button>
-  <button class="tab-btn" id="tab-revenue" data-bs-toggle="tab"
-          data-bs-target="#revenue" type="button" role="tab"
-          aria-controls="revenue" aria-selected="false">
-    <i class="bi bi-currency-pound"></i> Revenue Intelligence
+  <button class="tab-btn" id="tab-revenue" type="button" role="tab">
+    <i class="bi bi-bar-chart-fill"></i> Revenue Intelligence
   </button>
 </div>
 
 <!-- Tab Content -->
-<div class="tab-content">
-
-  <!-- TAB 1: OVERVIEW -->
-  <div class="tab-pane fade show active" id="overview" role="tabpanel">
-    <div class="row g-4 mb-4">
-      <div class="col-lg-6">
-        <div class="glass-card">
-          <div class="section-title"><i class="bi bi-pie-chart-fill"></i> Segment Distribution</div>
-          <div id="chartPie" class="chart-wrap"></div>
-        </div>
+<div id="tab-overview-panel" class="tab-panel">
+  <div class="row g-4 mb-4">
+    <div class="col-lg-6">
+      <div class="glass-card">
+        <div class="section-title"><i class="bi bi-pie-chart-fill"></i> Segment Distribution</div>
+        <div id="chartPie" class="chart-wrap"></div>
       </div>
-      <div class="col-lg-6">
-        <div class="glass-card">
-          <div class="section-title"><i class="bi bi-trophy-fill"></i> Top 10 Customers by Spend</div>
-          <div id="chartTop" class="chart-wrap"></div>
-        </div>
+    </div>
+    <div class="col-lg-6">
+      <div class="glass-card">
+        <div class="section-title"><i class="bi bi-trophy-fill"></i> Top 10 Customers by Spend</div>
+        <div id="chartTop" class="chart-wrap"></div>
       </div>
     </div>
   </div>
+</div>
 
-  <!-- TAB 2: RFM ANALYSIS -->
-  <div class="tab-pane fade" id="rfm" role="tabpanel">
-    <div class="row g-4 mb-4">
-      <div class="col-12">
-        <div class="glass-card">
-          <div class="section-title"><i class="bi bi-calendar-event"></i> Recency Distribution</div>
-          <div id="chartRec" class="chart-wrap"></div>
-        </div>
+<div id="tab-rfm-panel" class="tab-panel" style="display:none;">
+  <div class="row g-4 mb-4">
+    <div class="col-12">
+      <div class="glass-card">
+        <div class="section-title"><i class="bi bi-calendar-event"></i> Recency Distribution</div>
+        <div id="chartRec" class="chart-wrap"></div>
       </div>
-      <div class="col-12">
-        <div class="glass-card">
-          <div class="section-title"><i class="bi bi-arrow-repeat"></i> Frequency Distribution</div>
-          <div id="chartFrq" class="chart-wrap"></div>
-        </div>
+    </div>
+    <div class="col-12">
+      <div class="glass-card">
+        <div class="section-title"><i class="bi bi-arrow-repeat"></i> Frequency Distribution</div>
+        <div id="chartFrq" class="chart-wrap"></div>
       </div>
-      <div class="col-12">
-        <div class="glass-card">
-          <div class="section-title"><i class="bi bi-box"></i> Spend Distribution by Segment</div>
-          <div id="chartBox" class="chart-wrap"></div>
-        </div>
+    </div>
+    <div class="col-12">
+      <div class="glass-card">
+        <div class="section-title"><i class="bi bi-box"></i> Spend Distribution by Segment</div>
+        <div id="chartBox" class="chart-wrap"></div>
       </div>
     </div>
   </div>
+</div>
 
-  <!-- TAB 3: REVENUE INTELLIGENCE -->
-  <div class="tab-pane fade" id="revenue" role="tabpanel">
-    <div class="row g-4 mb-4">
-      <div class="col-12">
-        <div class="glass-card">
-          <div class="section-title"><i class="bi bi-scatter-chart"></i> Recency vs. Lifetime Spend</div>
-          <div id="chartScat" class="chart-wrap"></div>
-        </div>
+<div id="tab-revenue-panel" class="tab-panel" style="display:none;">
+  <div class="row g-4 mb-4">
+    <div class="col-12">
+      <div class="glass-card">
+        <div class="section-title"><i class="bi bi-scatter-chart"></i> Recency vs. Lifetime Spend</div>
+        <div id="chartScat" class="chart-wrap"></div>
       </div>
-      <div class="col-12">
-        <div class="glass-card">
-          <div class="section-title"><i class="bi bi-grid-3x3-gap-fill"></i> Revenue Contribution — Top 20</div>
-          <div id="chartTree" class="chart-wrap"></div>
-        </div>
+    </div>
+    <div class="col-12">
+      <div class="glass-card">
+        <div class="section-title"><i class="bi bi-grid-3x3-gap-fill"></i> Revenue Contribution — Top 20</div>
+        <div id="chartTree" class="chart-wrap"></div>
       </div>
-      <div class="col-12">
-        <div class="glass-card">
-          <div class="section-title"><i class="bi bi-bar-chart-fill"></i> Avg Spend by Purchase Frequency</div>
-          <div id="chartBkt" class="chart-wrap"></div>
-        </div>
+    </div>
+    <div class="col-12">
+      <div class="glass-card">
+        <div class="section-title"><i class="bi bi-bar-chart-fill"></i> Avg Spend by Purchase Frequency</div>
+        <div id="chartBkt" class="chart-wrap"></div>
       </div>
     </div>
   </div>
+</div>
 
-</div><!-- tab-content -->
 {% endif %}
 {% endblock %}
 
 {% block page_scripts %}
+<script type="application/json" id="_pieData">{{ chart_pie | safe }}</script>
+<script type="application/json" id="_topData">{{ chart_top | safe }}</script>
+<script type="application/json" id="_recData">{{ chart_rec | safe }}</script>
+<script type="application/json" id="_frqData">{{ chart_frq | safe }}</script>
+<script type="application/json" id="_boxData">{{ chart_box | safe }}</script>
+<script type="application/json" id="_scatData">{{ chart_scat | safe }}</script>
+<script type="application/json" id="_treeData">{{ chart_tree | safe }}</script>
+<script type="application/json" id="_bktData">{{ chart_bkt | safe }}</script>
 <script>
-  /* Overview charts — always render */
-  renderChart('chartPie', {{ chart_pie | tojson }});
-  renderChart('chartTop', {{ chart_top | tojson }});
+  // Vanilla JS tab switching (no Bootstrap JS dependency)
+  var tabs = {
+    'tab-overview': 'tab-overview-panel',
+    'tab-rfm':      'tab-rfm-panel',
+    'tab-revenue':  'tab-revenue-panel'
+  };
+  var rendered = {};
 
-  /* Sync active class on custom tab buttons */
-  document.querySelectorAll('[data-bs-toggle="tab"]').forEach(btn => {
-    btn.addEventListener('shown.bs.tab', () => {
-      document.querySelectorAll('[data-bs-toggle="tab"]').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
+  function activateTab(id) {
+    // Update buttons
+    Object.keys(tabs).forEach(function(btnId) {
+      document.getElementById(btnId).classList.toggle('active', btnId === id);
+    });
+    // Update panels
+    Object.values(tabs).forEach(function(panelId) {
+      document.getElementById(panelId).style.display = 'none';
+    });
+    document.getElementById(tabs[id]).style.display = 'block';
+
+    // Lazy-render charts for this tab
+    if (!rendered[id]) {
+      rendered[id] = true;
+      if (id === 'tab-overview') {
+        renderChart('chartPie', document.getElementById('_pieData').textContent);
+        renderChart('chartTop', document.getElementById('_topData').textContent);
+      }
+      if (id === 'tab-rfm') {
+        renderChart('chartRec', document.getElementById('_recData').textContent);
+        renderChart('chartFrq', document.getElementById('_frqData').textContent);
+        renderChart('chartBox', document.getElementById('_boxData').textContent);
+      }
+      if (id === 'tab-revenue') {
+        renderChart('chartScat', document.getElementById('_scatData').textContent);
+        renderChart('chartTree', document.getElementById('_treeData').textContent);
+        renderChart('chartBkt',  document.getElementById('_bktData').textContent);
+      }
+    }
+  }
+
+  // Bind tab buttons
+  Object.keys(tabs).forEach(function(btnId) {
+    document.getElementById(btnId).addEventListener('click', function() {
+      activateTab(btnId);
     });
   });
 
-  /* RFM charts — lazy render when tab opens (fixes invisible-div sizing bug) */
-  let rfmDone = false;
-  document.getElementById('tab-rfm').addEventListener('shown.bs.tab', () => {
-    if (!rfmDone) {
-      renderChart('chartRec', {{ chart_rec | tojson }});
-      renderChart('chartFrq', {{ chart_frq | tojson }});
-      renderChart('chartBox', {{ chart_box | tojson }});
-      rfmDone = true;
-    }
-  });
-
-  let revDone = false;
-  document.getElementById('tab-revenue').addEventListener('shown.bs.tab', () => {
-    if (!revDone) {
-      renderChart('chartScat', {{ chart_scat | tojson }});
-      renderChart('chartTree', {{ chart_tree | tojson }});
-      renderChart('chartBkt',  {{ chart_bkt  | tojson }});
-      revDone = true;
-    }
-  });
-
+  // Render the default active tab on load
+  activateTab('tab-overview');
 </script>
 {% endblock %}
