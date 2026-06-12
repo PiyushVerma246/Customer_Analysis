@@ -345,9 +345,15 @@ def insights():
                     # Radar chart
                     cats = ["Recency", "Frequency", "Monetary", "Recency"]
                     vals = [round(r_pct, 3), round(f_pct, 3), round(m_pct, 3), round(r_pct, 3)]
+                    # Convert hex color to rgba for fillcolor (8-digit hex not supported by Plotly)
+                    def _hex_to_rgba(hex_color, alpha=0.12):
+                        h = hex_color.lstrip('#')
+                        r_c, g_c, b_c = int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16)
+                        return f"rgba({r_c},{g_c},{b_c},{alpha})"
+
                     fig_radar = go.Figure(go.Scatterpolar(
                         r=vals, theta=cats, fill="toself",
-                        fillcolor=f"{clr}1a",
+                        fillcolor=_hex_to_rgba(clr, 0.12),
                         line=dict(color=clr, width=2.5),
                         marker=dict(size=8, color=clr),
                         hovertemplate="%{theta}: <b>%{r:.0%}</b><extra></extra>",
