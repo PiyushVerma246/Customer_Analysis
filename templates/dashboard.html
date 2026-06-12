@@ -39,42 +39,42 @@
 <div class="row g-3 mb-4">
   <div class="col-xl-3 col-sm-6">
     <div class="kpi-card">
-      <div class="kpi-glow" style="background:#6366f1;"></div>
+      <div class="kpi-glow" data-bg="#6366f1"></div>
       <span class="kpi-icon">👥</span>
       <div class="kpi-label">Total Customers</div>
       <div class="kpi-value">{{ total }}</div>
       <div class="kpi-delta positive"><i class="bi bi-arrow-up-short"></i> Records in dataset</div>
-      <div class="kpi-accent-bar" style="background:linear-gradient(90deg,#6366f1,transparent);"></div>
+      <div class="kpi-accent-bar" data-bg="linear-gradient(90deg,#6366f1,transparent)"></div>
     </div>
   </div>
   <div class="col-xl-3 col-sm-6">
     <div class="kpi-card">
-      <div class="kpi-glow" style="background:#a855f7;"></div>
+      <div class="kpi-glow" data-bg="#a855f7"></div>
       <span class="kpi-icon">💎</span>
       <div class="kpi-label">VIP Customers</div>
       <div class="kpi-value">{{ vip_count }}</div>
       <div class="kpi-delta positive"><i class="bi bi-arrow-up-short"></i> {{ vip_pct }}% of base</div>
-      <div class="kpi-accent-bar" style="background:linear-gradient(90deg,#a855f7,transparent);"></div>
+      <div class="kpi-accent-bar" data-bg="linear-gradient(90deg,#a855f7,transparent)"></div>
     </div>
   </div>
   <div class="col-xl-3 col-sm-6">
     <div class="kpi-card">
-      <div class="kpi-glow" style="background:#10b981;"></div>
+      <div class="kpi-glow" data-bg="#10b981"></div>
       <span class="kpi-icon">🛒</span>
       <div class="kpi-label">Regular Customers</div>
       <div class="kpi-value">{{ reg_count }}</div>
       <div class="kpi-delta positive"><i class="bi bi-arrow-up-short"></i> {{ reg_pct }}% of base</div>
-      <div class="kpi-accent-bar" style="background:linear-gradient(90deg,#10b981,transparent);"></div>
+      <div class="kpi-accent-bar" data-bg="linear-gradient(90deg,#10b981,transparent)"></div>
     </div>
   </div>
   <div class="col-xl-3 col-sm-6">
     <div class="kpi-card">
-      <div class="kpi-glow" style="background:#ef4444;"></div>
+      <div class="kpi-glow" data-bg="#ef4444"></div>
       <span class="kpi-icon">⚠️</span>
       <div class="kpi-label">At-Risk Customers</div>
       <div class="kpi-value">{{ risk_count }}</div>
       <div class="kpi-delta negative"><i class="bi bi-arrow-down-short"></i> {{ risk_pct }}% — needs action</div>
-      <div class="kpi-accent-bar" style="background:linear-gradient(90deg,#ef4444,transparent);"></div>
+      <div class="kpi-accent-bar" data-bg="linear-gradient(90deg,#ef4444,transparent)"></div>
     </div>
   </div>
 </div>
@@ -95,10 +95,10 @@
       <div class="seg-progress-wrap">
         <div class="seg-progress-header">
           <span>{{ s.segment }}</span>
-          <span style="color:{{ s.color }};">{{ s.count }} &middot; {{ s.pct }}%</span>
+          <span data-color="{{ s.color }}">{{ s.count }} &middot; {{ s.pct }}%</span>
         </div>
         <div class="seg-progress-track">
-          <div class="seg-progress-fill" style="width:{{ s.pct }}%; background:{{ s.color }};"></div>
+          <div class="seg-progress-fill" data-width="{{ s.pct }}%" data-bg="{{ s.color }}"></div>
         </div>
       </div>
       {% endfor %}
@@ -106,12 +106,12 @@
       <div class="rev-panel">
         <div class="rev-panel-title">Revenue Overview</div>
         <div class="rev-row">
-          <span style="color:#64748b;">Avg Customer LTV</span>
-          <span style="color:#a5b4fc; font-weight:700;">{{ avg_ltv }}</span>
+          <span>Avg Customer LTV</span>
+          <span class="fw-bold">{{ avg_ltv }}</span>
         </div>
         <div class="rev-row">
-          <span style="color:#64748b;">Total Revenue</span>
-          <span style="color:#6ee7b7; font-weight:700;">{{ total_rev }}</span>
+          <span>Total Revenue</span>
+          <span class="fw-bold">{{ total_rev }}</span>
         </div>
       </div>
     </div>
@@ -131,26 +131,23 @@
               <th>Customers</th>
               <th>Avg Recency (days)</th>
               <th>Avg Frequency</th>
-              <th>Avg Spend (£)</th>
-              <th>Total Revenue (£)</th>
+              <th>Avg Spend (₹)</th>
+              <th>Total Revenue (₹)</th>
             </tr>
           </thead>
           <tbody>
             {% for row in summary %}
             <tr>
               <td>
-                <span class="seg-badge
-                  {% if row.Segment == 'VIP' %}seg-vip
-                  {% elif row.Segment == 'Regular' %}seg-reg
-                  {% else %}seg-risk{% endif %}">
+                <span class="seg-badge {% if row.Segment == 'VIP' %}seg-vip{% elif row.Segment == 'Regular' %}seg-reg{% else %}seg-risk{% endif %}">
                   <span class="dot"></span>{{ row.Segment }}
                 </span>
               </td>
               <td>{{ "{:,}".format(row.Customers|int) }}</td>
               <td>{{ "%.0f"|format(row.Avg_Recency) }}</td>
               <td>{{ "%.1f"|format(row.Avg_Frequency) }}</td>
-              <td>£{{ "{:,.2f}".format(row['Avg_Monetary']) }}</td>
-              <td style="color:#a5b4fc; font-weight:600;">£{{ "{:,.2f}".format(row['Total_Revenue']) }}</td>
+              <td>₹{{ "{:,.2f}".format(row['Avg_Monetary']) }}</td>
+              <td class="fw-semibold" data-color="#a5b4fc">₹{{ "{:,.2f}".format(row['Total_Revenue']) }}</td>
             </tr>
             {% endfor %}
           </tbody>
@@ -164,7 +161,7 @@
 <div class="row g-4">
   <div class="col-12">
     <div class="glass-card">
-      <div class="section-title"><i class="bi bi-currency-pound"></i> Total Revenue by Segment</div>
+      <div class="section-title"><i class="bi bi-bar-chart-fill"></i> Total Revenue by Segment</div>
       <div id="revChart" class="chart-wrap"></div>
     </div>
   </div>
@@ -174,8 +171,21 @@
 {% endblock %}
 
 {% block page_scripts %}
+<script type="application/json" id="_donutData">{{ chart_donut | safe }}</script>
+<script type="application/json" id="_revData">{{ chart_rev | safe }}</script>
 <script>
-  renderChart('donutChart', {{ chart_donut | tojson }});
-  renderChart('revChart',   {{ chart_rev   | tojson }});
+  // Apply dynamic colours/widths from data-* attributes
+  document.querySelectorAll('[data-bg]').forEach(function(el) {
+    el.style.background = el.getAttribute('data-bg');
+  });
+  document.querySelectorAll('[data-color]').forEach(function(el) {
+    el.style.color = el.getAttribute('data-color');
+  });
+  document.querySelectorAll('[data-width]').forEach(function(el) {
+    el.style.width = el.getAttribute('data-width');
+  });
+
+  renderChart('donutChart', document.getElementById('_donutData').textContent);
+  renderChart('revChart',   document.getElementById('_revData').textContent);
 </script>
 {% endblock %}

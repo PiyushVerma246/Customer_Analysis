@@ -136,9 +136,10 @@ def fmt_gbp(v: float) -> str:
 _INTELLIGENCE = {
     "VIP": {
         "icon": "bi-gem",
-        "color": "#a855f7",
-        "bg": "rgba(168,85,247,0.08)",
-        "border": "rgba(168,85,247,0.35)",
+        "icon_color": "#c084fc",
+        "color": "#c084fc",
+        "bg": "rgba(192,132,252,0.1)",
+        "border": "rgba(192,132,252,0.3)",
         "title": "VIP Customer — High Value",
         "body": (
             "This customer ranks among your top performers with high purchase frequency "
@@ -149,9 +150,10 @@ _INTELLIGENCE = {
     },
     "Regular": {
         "icon": "bi-cart3",
-        "color": "#10b981",
-        "bg": "rgba(16,185,129,0.08)",
-        "border": "rgba(16,185,129,0.35)",
+        "icon_color": "#34d399",
+        "color": "#34d399",
+        "bg": "rgba(52,211,153,0.1)",
+        "border": "rgba(52,211,153,0.3)",
         "title": "Regular Customer — Steady Engagement",
         "body": (
             "An active, reliable buyer who consistently engages with your brand. "
@@ -162,9 +164,10 @@ _INTELLIGENCE = {
     },
     "At Risk": {
         "icon": "bi-exclamation-triangle",
-        "color": "#ef4444",
-        "bg": "rgba(239,68,68,0.08)",
-        "border": "rgba(239,68,68,0.35)",
+        "icon_color": "#fb7185",
+        "color": "#fb7185",
+        "bg": "rgba(251,113,133,0.1)",
+        "border": "rgba(251,113,133,0.3)",
         "title": "At-Risk Customer — Needs Intervention",
         "body": (
             "This customer's purchase recency is high — they may be disengaging or churning. "
