@@ -35,6 +35,43 @@
   --radius-card:    16px;
   --radius-sm:      8px;
   --transition:     0.2s ease;
+  --sidebar-bg:     var(--sidebar-bg);
+  --topbar-bg:      var(--topbar-bg);
+  --btn-outline:    var(--btn-outline);
+  --table-hover:    var(--table-hover);
+  --input-bg:       rgba(15,23,42,0.6);
+  --selection-bg:   var(--selection-bg);
+}
+
+/* ── Light Theme Tokens ───────────────────────────────────── */
+[data-theme="light"] {
+  --bg-primary:     #f8fafc;
+  --bg-secondary:   #ffffff;
+  --bg-card:        rgba(255,255,255,0.8);
+  --bg-card-hover:  rgba(255,255,255,0.95);
+  --border-glass:   rgba(148,163,184,0.2);
+  --border-glass-2: rgba(148,163,184,0.3);
+
+  --accent-blue:    #2563eb;
+  --accent-purple:  #7c3aed;
+  --accent-cyan:    #0891b2;
+  --accent-emerald: #059669;
+  --accent-rose:    #dc2626;
+  --accent-amber:   #d97706;
+
+  --gradient-main:  linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+  --gradient-card:  linear-gradient(135deg, rgba(37,99,235,0.05) 0%, rgba(124,58,237,0.05) 100%);
+  --gradient-glow:  linear-gradient(135deg, rgba(37,99,235,0.15) 0%, rgba(124,58,237,0.15) 100%);
+
+  --text-primary:   #0f172a;
+  --text-secondary: #475569;
+  --text-muted:     #64748b;
+  --sidebar-bg:     #ffffff;
+  --topbar-bg:      rgba(248,250,252,0.9);
+  --btn-outline:    rgba(0,0,0,0.05);
+  --table-hover:    rgba(0,0,0,0.03);
+  --input-bg:       #ffffff;
+  --selection-bg:   rgba(139,92,246,0.2);
 }
 
 /* ── Reset & Base ─────────────────────────────────────────── */
@@ -51,7 +88,7 @@ body {
   overflow-x: hidden;
 }
 
-::selection { background: rgba(139,92,246,0.35); color: #fff; }
+::selection { background: var(--selection-bg); color: #fff; }
 
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: var(--bg-secondary); }
@@ -64,7 +101,7 @@ body {
 /* ── Sidebar ──────────────────────────────────────────────── */
 .sidebar {
   width: var(--sidebar-width);
-  background: rgba(9,14,30,0.98);
+  background: var(--sidebar-bg);
   border-right: 1px solid var(--border-glass);
   display: flex;
   flex-direction: column;
@@ -254,7 +291,7 @@ body {
   position: absolute;
   top: 100%; left: 0; right: 0;
   margin-top: 8px;
-  background: rgba(9,14,30,0.98);
+  background: var(--sidebar-bg);
   border: 1px solid var(--border-glass-2);
   border-radius: 8px;
   box-shadow: 0 10px 30px rgba(0,0,0,0.5);
@@ -463,7 +500,7 @@ body {
 
 .form-control {
   width: 100%;
-  background: rgba(255,255,255,0.05);
+  background: var(--btn-outline);
   border: 1px solid var(--border-glass);
   border-radius: var(--radius-sm);
   color: var(--text-primary);
@@ -495,7 +532,7 @@ select.form-control option {
 .mode-option input { display: none; }
 .mode-label {
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
-  background: rgba(255,255,255,0.03); border: 1px solid var(--border-glass);
+  background: var(--table-hover); border: 1px solid var(--border-glass);
   padding: 16px; border-radius: var(--radius-sm); transition: all 0.2s;
   text-align: center;
 }
@@ -508,7 +545,7 @@ select.form-control option {
 .mode-option input:checked + .mode-label i { color: var(--accent-purple); }
 
 .assigned-id-box {
-  background: rgba(255,255,255,0.03); border: 1px dashed var(--border-glass-2);
+  background: var(--table-hover); border: 1px dashed var(--border-glass-2);
   padding: 12px; border-radius: var(--radius-sm); display: flex; align-items: center; gap: 12px;
 }
 .assigned-id-badge {
@@ -518,7 +555,7 @@ select.form-control option {
 
 .search-dropdown {
   position: absolute; top: 100%; left: 0; right: 0; margin-top: 4px;
-  background: rgba(9,14,30,0.98); border: 1px solid var(--border-glass-2);
+  background: var(--sidebar-bg); border: 1px solid var(--border-glass-2);
   border-radius: var(--radius-sm); box-shadow: 0 10px 30px rgba(0,0,0,0.5);
   display: none; z-index: 1000; overflow: hidden; max-height: 200px; overflow-y: auto;
 }
@@ -632,7 +669,7 @@ select.form-control option {
 }
 
 .rec-card:hover {
-  border-color: rgba(139,92,246,0.35);
+  border-color: var(--selection-bg);
   transform: translateY(-2px);
   box-shadow: 0 8px 32px rgba(0,0,0,0.3);
 }

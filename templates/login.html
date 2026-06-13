@@ -26,8 +26,23 @@
     <button type="submit" class="btn btn-primary w-100 mb-3" style="border-radius:8px;">Sign In</button>
   </form>
   
+  <div class="mb-4 text-center">
+    <div style="font-size:12px; color:var(--text-muted); margin-bottom:8px; text-transform:uppercase; letter-spacing:1px;">Or</div>
+    <button type="button" id="demoLoginBtn" class="btn btn-outline w-100" style="border-radius:8px; color:var(--accent-purple); border-color:rgba(139, 92, 246, 0.4);">
+      <i class="fa-solid fa-wand-magic-sparkles me-2"></i> One-Click Demo Login
+    </button>
+  </div>
+  
   <div class="text-center">
     <a href="{{ url_for('register') }}" class="auth-link">Create a new account</a>
   </div>
 </div>
+
+<script>
+document.getElementById('demoLoginBtn').addEventListener('click', function() {
+  document.getElementById('username').value = 'testuser';
+  document.getElementById('password').value = 'testpass';
+  document.getElementById('username').closest('form').submit();
+});
+</script>
 {% endblock %}

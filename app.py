@@ -862,6 +862,44 @@ def api_dashboard_stats():
             seg_dist[friendly] = int((df["Segment"] == seg).sum())
     return jsonify({"status": "success", "kpis": summary, "seg_distribution": seg_dist})
 
+@app.route("/api/generate-demo-data", methods=["POST"])
+@login_required
+def api_generate_demo_data():
+    try:
+        from utils.database import get_connection
+        import pandas as pd
+        from datetime import date
+        
+        conn = get_connection()
+        c = conn.cursor()
+        
+        segments = pd.read_csv('data/customer_segments.csv')
+        churn = pd.read_csv('data/customer_churn.csv')
+        merged = pd.merge(segments, churn, on='CustomerID', how='outer')
+        
+        # Insert a subset to keep it fast
+        for _, row in merged.head(150).iterrows():
+            cid = str(int(row['CustomerID']))
+            c.execute('INSERT OR IGNORE INTO customers (customer_id, name, phone, created_at) VALUES (?, ?, ?, ?)',
+                     (cid, f'Customer #{cid}', '', date.today().isoformat()))
+            
+            monetary = float(row.get('Monetary_x', row.get('Monetary_y', 0)))
+            if not pd.isna(monetary):
+                c.execute('INSERT INTO transactions (customer_id, purchase_amount, purchase_date, product_purchased, created_at) VALUES (?, ?, ?, ?, ?)',
+                         (cid, monetary, date.today().isoformat(), 'Demo Import', date.today().isoformat()))
+            
+            seg = row.get('Segment_x', row.get('Segment_y', 'Regular'))
+            risk = row.get('ChurnRisk', 0)
+            risk_label = 'High Retention Risk' if risk >= 0.7 else 'Medium Retention Risk' if risk >= 0.4 else 'Low Retention Risk'
+            
+            c.execute('INSERT INTO predictions (customer_id, customer_category, retention_risk, churn_probability, prediction_time) VALUES (?, ?, ?, ?, ?)',
+                     (cid, seg, risk_label, risk, date.today().isoformat()))
+                     
+        conn.commit()
+        conn.close()
+        return jsonify({"status": "success", "message": "Demo data generated successfully."})
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
 
 # ── 404 handler ────────────────────────────────────────────────────────────
 @app.errorhandler(404)

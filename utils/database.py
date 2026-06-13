@@ -74,6 +74,9 @@ def init_db() -> None:
     """)
     conn.commit()
     conn.close()
+    
+    # Auto-create demo user
+    create_user("testuser", "testpass")
 
 
 # ── User Auth CRUD ─────────────────────────────────────────────────────────
