@@ -3,7 +3,7 @@
 venv/
 env/
 .env
-
+.agent
 # Python caches
 __pycache__/
 *.py[cod]

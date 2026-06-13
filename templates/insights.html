@@ -1,251 +1,235 @@
 {% extends "base.html" %}
-{% block title %}Customer Insights — Smart Retail Analytics{% endblock %}
-{% block breadcrumb %}Customer Insights{% endblock %}
+{% block title %}Customer Lookup — Smart Retail Analytics{% endblock %}
 
 {% block content %}
+
+<!-- Page Header -->
 <div class="page-header">
-  <div class="page-header-crumb">🛍️ Smart Retail Analytics</div>
-  <h1>🔍 Customer Insights</h1>
-  <p>Look up individual customer profiles, RFM scores, and personalised intelligence</p>
+  <div class="page-eyebrow">🔍 Customer Intelligence</div>
+  <h1>Customer Lookup</h1>
+  <p>Search any customer by ID to view their full profile, RFM scores, and personalised insights</p>
 </div>
 
-<!-- ── Search Form ── -->
-<div class="glass-card mb-4">
-  <div class="section-title"><i class="bi bi-search"></i> Customer Lookup</div>
-  <form method="POST" action="{{ url_for('insights') }}">
-    <div class="row align-items-end g-3">
-      <div class="col-md-4">
-        <label class="form-label-custom">Customer ID</label>
+<!-- Search Panel -->
+<div class="search-panel">
+  <div class="search-title">Find a Customer</div>
+  <div class="search-sub">Enter a Customer ID to instantly load their profile and behavioural data.</div>
+  <form method="POST" action="{{ url_for('insights') }}" id="searchForm">
+    <div class="search-row">
+      <div class="input-wrap">
         <input
           type="text"
           name="customer_id"
-          class="form-control-custom"
+          id="customerIdInput"
+          class="input-custom"
           placeholder="e.g. {{ id_range.min }}"
           value="{{ cid_value }}"
           autocomplete="off"
+          autofocus
         >
+        <i class="bi bi-search input-icon"></i>
       </div>
-      <div class="col-md-4">
-        <button type="submit" class="btn-primary-custom">
-          <i class="bi bi-search me-2"></i>Search Customer
-        </button>
-      </div>
-      <div class="col-md-4">
-        <div style="font-size:.78rem; color:#475569; line-height:1.6;">
-          Valid range:
-          <strong style="color:#94a3b8;">{{ id_range.min|int }}</strong>
-          &ndash;
-          <strong style="color:#94a3b8;">{{ id_range.max|int }}</strong>
-          &nbsp;&middot;&nbsp;{{ id_range.total|int }} customers
-        </div>
+      <button type="submit" class="btn-primary" id="searchBtn">
+        <i class="bi bi-search"></i> Search
+      </button>
+      {% if cid_value %}
+      <a href="{{ url_for('insights') }}" class="btn-ghost">
+        <i class="bi bi-x-circle"></i> Clear
+      </a>
+      {% endif %}
+      <div class="search-range-hint">
+        Range: <strong>{{ id_range.min }}</strong> – <strong>{{ id_range.max }}</strong>
+        &nbsp;·&nbsp; <strong>{{ id_range.total }}</strong> customers
       </div>
     </div>
   </form>
 </div>
 
-<!-- ── Validation messages ── -->
+<!-- Validation Messages -->
 {% if form_error %}
-<div class="alert-custom alert-warn mb-3">
+<div class="alert-box alert-warn mb-3">
   <i class="bi bi-exclamation-triangle-fill"></i>
   <span>{{ form_error }}</span>
 </div>
 {% endif %}
 {% if form_warning %}
-<div class="alert-custom alert-warn mb-3">
+<div class="alert-box alert-warn mb-3">
   <i class="bi bi-person-x-fill"></i>
   <span>{{ form_warning }}</span>
 </div>
 {% endif %}
 
-<!-- ── No result yet — show hint + sample ── -->
+<!-- Empty / Initial State -->
 {% if not customer and not form_error and not form_warning %}
-<div class="alert-custom alert-info mb-4">
-  <i class="bi bi-info-circle-fill"></i>
-  <span>Enter a CustomerID above to view the complete customer profile, RFM scores, and segment intelligence.</span>
-</div>
 
-<!-- Sample customers accordion -->
-<div class="accordion accordion-dark" id="sampleAccordion">
-  <div class="accordion-item">
-    <h2 class="accordion-header">
-      <button class="accordion-button collapsed" data-bs-toggle="collapse"
-              data-bs-target="#sampleCollapse">
-        <i class="bi bi-table me-2"></i> Browse sample customers
-      </button>
-    </h2>
-    <div id="sampleCollapse" class="accordion-collapse collapse" data-bs-parent="#sampleAccordion">
-      <div class="accordion-body">
-        <div class="table-responsive">
-          <table class="table-dark-custom">
-            <thead>
-              <tr>
-                <th>Customer ID</th><th>Segment</th>
-                <th>Recency (days)</th><th>Frequency</th><th>Monetary</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for s in sample %}
-              <tr>
-                <td style="color:#a5b4fc; font-weight:600;">{{ s.CustomerID }}</td>
-                <td>
-                  <span class="seg-badge
-                    {% if s.Segment == 'VIP' %}seg-vip
-                    {% elif s.Segment == 'Regular' %}seg-reg
-                    {% else %}seg-risk{% endif %}">
-                    <span class="dot"></span>{{ s.Segment }}
-                  </span>
-                </td>
-                <td>{{ s.Recency }}</td>
-                <td>{{ s.Frequency }}</td>
-                <td>£{{ "%.2f"|format(s.Monetary) }}</td>
-              </tr>
-              {% endfor %}
-            </tbody>
-          </table>
+<div class="glass-card">
+  <div class="empty-state">
+    <div class="empty-state-icon">🔍</div>
+    <h3>Search for a Customer</h3>
+    <p>Enter a Customer ID in the field above to view their complete profile including RFM scores, segment classification, and AI-powered recommendations.</p>
+  </div>
+
+  <!-- Sample customers table -->
+  <div class="accordion accordion-dark sample-accordion">
+    <div class="accordion-item">
+      <h2 class="accordion-header">
+        <button class="accordion-button collapsed" data-bs-toggle="collapse"
+                data-bs-target="#sampleCollapse">
+          <i class="bi bi-table me-2"></i> Browse sample customers to get started
+        </button>
+      </h2>
+      <div id="sampleCollapse" class="accordion-collapse collapse">
+        <div class="accordion-body">
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Customer ID</th>
+                  <th>Segment</th>
+                  <th>Last Purchase (days ago)</th>
+                  <th>Orders</th>
+                  <th>Lifetime Spend</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for s in sample %}
+                <tr class="sample-row" data-cid="{{ s.CustomerID }}">
+                  <td class="fw-bold sample-id">{{ s.CustomerID }}</td>
+                  <td>
+                    <span class="seg-badge {% if s.Segment == 'VIP' %}seg-vip{% elif s.Segment == 'Regular' %}seg-reg{% else %}seg-risk{% endif %}">
+                      <span class="dot"></span>{{ s.Segment }}
+                    </span>
+                  </td>
+                  <td>{{ s.Recency }}</td>
+                  <td>{{ s.Frequency }}</td>
+                  <td>₹{{ "%.2f"|format(s.Monetary) }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          <p class="sample-hint">
+            <i class="bi bi-hand-index-thumb me-1"></i> Click any row to instantly load that customer
+          </p>
         </div>
       </div>
     </div>
   </div>
 </div>
+
 {% endif %}
 
-<!-- ── Customer profile (search result) ── -->
+<!-- Customer Profile (result) -->
 {% if customer %}
 
-<!-- Profile card -->
+<!-- Profile Header Card -->
 <div class="profile-card mb-4">
-  <div class="d-flex align-items-center gap-3">
+  <div class="d-flex align-items-center gap-3 flex-wrap">
     <div class="profile-avatar">
-      <i class="bi {{ customer.icon }}" style="color:white;"></i>
+      <i class="bi {{ customer.icon }}" data-color="white"></i>
     </div>
     <div class="flex-grow-1">
-      <div style="font-size:1.3rem; font-weight:800; color:#f8fafc; margin-bottom:.3rem;">
+      <div class="profile-name">
         Customer #{{ customer.id }}
       </div>
       <span class="seg-badge {{ customer.seg_class }}">
         <span class="dot"></span>{{ customer.segment }}
       </span>
     </div>
-    <div class="text-end">
-      <div style="font-size:.62rem; color:#475569; text-transform:uppercase; letter-spacing:.09em; margin-bottom:.2rem;">Total LTV</div>
-      <div style="font-size:1.55rem; font-weight:900; color:{{ customer.color }};">
-        {{ customer.monetary }}
-      </div>
+    <div class="profile-ltv-block">
+      <div class="profile-ltv-label">Lifetime Value</div>
+      <div class="profile-ltv-value" data-color="{{ customer.color }}">{{ customer.monetary }}</div>
     </div>
   </div>
 </div>
 
-<!-- RFM Metric cards -->
+<!-- RFM KPI Cards -->
 <div class="row g-3 mb-4">
   <div class="col-md-4">
     <div class="kpi-card">
-      <div class="kpi-glow" style="background:#06b6d4;"></div>
+      <div class="kpi-glow" data-bg="#06b6d4"></div>
       <span class="kpi-icon">📅</span>
-      <div class="kpi-label">Recency</div>
+      <div class="kpi-label">Last Purchase</div>
       <div class="kpi-value">{{ customer.recency }}</div>
-      <div class="kpi-delta" style="color:#94a3b8;">days since last purchase</div>
-      <div class="kpi-accent-bar" style="background:linear-gradient(90deg,#06b6d4,transparent);"></div>
+      <div class="kpi-delta">days ago</div>
+      <div class="kpi-accent-bar" data-bg="linear-gradient(90deg,#06b6d4,transparent)"></div>
     </div>
   </div>
   <div class="col-md-4">
     <div class="kpi-card">
-      <div class="kpi-glow" style="background:#a855f7;"></div>
+      <div class="kpi-glow" data-bg="#a855f7"></div>
       <span class="kpi-icon">🔁</span>
-      <div class="kpi-label">Frequency</div>
+      <div class="kpi-label">Total Orders</div>
       <div class="kpi-value">{{ customer.frequency }}</div>
-      <div class="kpi-delta" style="color:#94a3b8;">total orders placed</div>
-      <div class="kpi-accent-bar" style="background:linear-gradient(90deg,#a855f7,transparent);"></div>
+      <div class="kpi-delta">orders placed</div>
+      <div class="kpi-accent-bar" data-bg="linear-gradient(90deg,#a855f7,transparent)"></div>
     </div>
   </div>
   <div class="col-md-4">
     <div class="kpi-card">
-      <div class="kpi-glow" style="background:#10b981;"></div>
+      <div class="kpi-glow" data-bg="#10b981"></div>
       <span class="kpi-icon">💰</span>
-      <div class="kpi-label">Monetary Value</div>
-      <div class="kpi-value" style="font-size:1.5rem;">{{ customer.monetary }}</div>
-      <div class="kpi-delta" style="color:#94a3b8;">cumulative lifetime spend</div>
-      <div class="kpi-accent-bar" style="background:linear-gradient(90deg,#10b981,transparent);"></div>
+      <div class="kpi-label">Lifetime Spend</div>
+      <div class="kpi-value kpi-value-sm">{{ customer.monetary }}</div>
+      <div class="kpi-delta">cumulative spend</div>
+      <div class="kpi-accent-bar" data-bg="linear-gradient(90deg,#10b981,transparent)"></div>
     </div>
   </div>
 </div>
 
 <!-- RFM Breakdown + Radar -->
 <div class="row g-4 mb-4">
-  <!-- Progress bars + stat rows -->
   <div class="col-lg-6">
     <div class="glass-card">
       <div class="section-title"><i class="bi bi-sliders"></i> RFM Score Breakdown</div>
 
-      <div class="rfm-wrap">
-        <div class="rfm-label">
-          <span style="color:#94a3b8;">Recency Score <small>(lower days = better)</small></span>
-          <span style="color:#06b6d4; font-weight:700;">{{ customer.recency }} days</span>
+      <div class="rfm-item">
+        <div class="rfm-header">
+          <span>Recency <small>(lower = better)</small></span>
+          <span class="rfm-val rfm-cyan">{{ customer.recency }} days</span>
         </div>
         <div class="rfm-track">
-          <div class="rfm-fill" style="width:{{ customer.r_pct }}%; background:#06b6d4;"></div>
+          <div class="rfm-fill" data-width="{{ customer.r_pct }}%" data-bg="#06b6d4"></div>
         </div>
       </div>
-      <div class="rfm-wrap">
-        <div class="rfm-label">
-          <span style="color:#94a3b8;">Frequency Score</span>
-          <span style="color:#a855f7; font-weight:700;">{{ customer.frequency }} orders</span>
+      <div class="rfm-item">
+        <div class="rfm-header">
+          <span>Frequency</span>
+          <span class="rfm-val rfm-purple">{{ customer.frequency }} orders</span>
         </div>
         <div class="rfm-track">
-          <div class="rfm-fill" style="width:{{ customer.f_pct }}%; background:#a855f7;"></div>
+          <div class="rfm-fill" data-width="{{ customer.f_pct }}%" data-bg="#a855f7"></div>
         </div>
       </div>
-      <div class="rfm-wrap">
-        <div class="rfm-label">
-          <span style="color:#94a3b8;">Monetary Score</span>
-          <span style="color:#10b981; font-weight:700;">{{ customer.monetary }}</span>
+      <div class="rfm-item">
+        <div class="rfm-header">
+          <span>Monetary</span>
+          <span class="rfm-val rfm-green">{{ customer.monetary }}</span>
         </div>
         <div class="rfm-track">
-          <div class="rfm-fill" style="width:{{ customer.m_pct }}%; background:#10b981;"></div>
+          <div class="rfm-fill" data-width="{{ customer.m_pct }}%" data-bg="#10b981"></div>
         </div>
       </div>
 
-      <div class="mt-3" style="border-top:1px solid rgba(255,255,255,0.06); padding-top:1rem;">
-        <div style="font-size:.82rem; font-weight:700; color:#f8fafc; margin-bottom:.7rem;">
-          vs. Dataset Averages
-        </div>
-        <div class="stat-row">
-          <span class="stat-lbl">Recency (this customer)</span>
-          <span class="stat-val">{{ customer.recency }} days</span>
-        </div>
-        <div class="stat-row">
-          <span class="stat-lbl">Recency (avg)</span>
-          <span class="stat-val" style="color:#64748b;">{{ customer.avg_recency }} days</span>
-        </div>
-        <div class="stat-row">
-          <span class="stat-lbl">Frequency (this customer)</span>
-          <span class="stat-val">{{ customer.frequency }} orders</span>
-        </div>
-        <div class="stat-row">
-          <span class="stat-lbl">Frequency (avg)</span>
-          <span class="stat-val" style="color:#64748b;">{{ customer.avg_frequency }} orders</span>
-        </div>
-        <div class="stat-row">
-          <span class="stat-lbl">Monetary (this customer)</span>
-          <span class="stat-val">{{ customer.monetary }}</span>
-        </div>
-        <div class="stat-row">
-          <span class="stat-lbl">Monetary (avg)</span>
-          <span class="stat-val" style="color:#64748b;">{{ customer.avg_monetary }}</span>
-        </div>
+      <div class="mt-3 pt-3 stat-compare-block">
+        <div class="stat-compare-title">vs. All Customers (avg)</div>
+        <div class="stat-row"><span class="stat-lbl">Recency — this customer</span><span class="stat-val">{{ customer.recency }} days</span></div>
+        <div class="stat-row"><span class="stat-lbl">Recency — average</span><span class="stat-val stat-muted">{{ customer.avg_recency }} days</span></div>
+        <div class="stat-row"><span class="stat-lbl">Orders — this customer</span><span class="stat-val">{{ customer.frequency }}</span></div>
+        <div class="stat-row"><span class="stat-lbl">Orders — average</span><span class="stat-val stat-muted">{{ customer.avg_frequency }}</span></div>
+        <div class="stat-row"><span class="stat-lbl">Spend — this customer</span><span class="stat-val">{{ customer.monetary }}</span></div>
+        <div class="stat-row"><span class="stat-lbl">Spend — average</span><span class="stat-val stat-muted">{{ customer.avg_monetary }}</span></div>
       </div>
     </div>
   </div>
 
-  <!-- Radar chart + percentile -->
   <div class="col-lg-6">
     <div class="glass-card">
       <div class="section-title"><i class="bi bi-radar"></i> RFM Radar Profile</div>
       <div id="radarChart" class="chart-wrap"></div>
-      <div class="pct-box mt-2">
+      <div class="pct-box">
         <div class="pct-box-label">Revenue Percentile</div>
-        <div class="pct-box-value" style="color:{{ customer.color }};">
-          Top {{ customer.top_pct }}%
-        </div>
+        <div class="pct-box-value" data-color="{{ customer.color }}">Top {{ customer.top_pct }}%</div>
         <div class="pct-box-sub">of all customers by spend</div>
       </div>
     </div>
@@ -254,18 +238,13 @@
 
 <!-- Segment Intelligence -->
 <div class="glass-card">
-  <div class="section-title"><i class="bi bi-lightbulb"></i> Segment Intelligence</div>
-  <div class="intel-card"
-       style="background:{{ customer.intel.bg }};
-              border:1px solid {{ customer.intel.border }};
-              border-left:3px solid {{ customer.intel.color }};">
-    <div class="intel-icon">
-      <i class="bi {{ customer.intel.icon }}" style="color:{{ customer.intel.color }};"></i>
+  <div class="section-title"><i class="bi bi-lightbulb"></i> What This Means</div>
+  <div class="intel-card" data-bg="{{ customer.intel.bg }}" data-border-left="{{ customer.intel.color }}">
+    <div class="intel-icon" data-color="{{ customer.intel.icon_color }}">
+      <i class="bi {{ customer.intel.icon }}"></i>
     </div>
     <div>
-      <div class="intel-title" style="color:{{ customer.intel.color }};">
-        {{ customer.intel.title }}
-      </div>
+      <div class="intel-title" data-color="{{ customer.intel.color }}">{{ customer.intel.title }}</div>
       <div class="intel-body">{{ customer.intel.body }}</div>
     </div>
   </div>
@@ -276,8 +255,36 @@
 
 {% block page_scripts %}
 {% if customer %}
+<script type="application/json" id="_radarData">{{ customer.chart_radar | safe }}</script>
+{% endif %}
 <script>
-  renderChart('radarChart', {{ customer.chart_radar | tojson }});
+  // Apply all dynamic styles from data-* attributes
+  document.querySelectorAll('[data-bg]').forEach(function(el) {
+    el.style.background = el.getAttribute('data-bg');
+  });
+  document.querySelectorAll('[data-color]').forEach(function(el) {
+    el.style.color = el.getAttribute('data-color');
+  });
+  document.querySelectorAll('[data-width]').forEach(function(el) {
+    el.style.width = el.getAttribute('data-width');
+  });
+  document.querySelectorAll('[data-border-left]').forEach(function(el) {
+    el.style.borderLeft = '3px solid ' + el.getAttribute('data-border-left');
+  });
+
+  // Sample-table click-to-load
+  document.querySelectorAll('.sample-row').forEach(function(row) {
+    row.style.cursor = 'pointer';
+    row.addEventListener('click', function() {
+      var input = document.getElementById('customerIdInput');
+      if (input) { input.value = row.getAttribute('data-cid'); document.getElementById('searchForm').submit(); }
+    });
+  });
+</script>
+
+{% if customer %}
+<script>
+  renderChart('radarChart', document.getElementById('_radarData').textContent);
 </script>
 {% endif %}
 {% endblock %}

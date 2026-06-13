@@ -21,6 +21,8 @@ import plotly.express as px
 import plotly.graph_objects as go
 from flask import Flask, render_template, request
 
+from nba_engine import NBAEngine
+
 warnings.filterwarnings("ignore")
 
 app = Flask(__name__)
@@ -120,6 +122,7 @@ def _load_data():
 
 # Load once at startup
 DF_CUSTOMERS, DF_RULES, KMEANS_MODEL = _load_data()
+NBA_ENGINE = NBAEngine(DF_CUSTOMERS, DF_RULES)
 
 
 # ── Utilities ──────────────────────────────────────────────────────────────
@@ -136,9 +139,10 @@ def fmt_gbp(v: float) -> str:
 _INTELLIGENCE = {
     "VIP": {
         "icon": "bi-gem",
-        "color": "#a855f7",
-        "bg": "rgba(168,85,247,0.08)",
-        "border": "rgba(168,85,247,0.35)",
+        "icon_color": "#c084fc",
+        "color": "#c084fc",
+        "bg": "rgba(192,132,252,0.1)",
+        "border": "rgba(192,132,252,0.3)",
         "title": "VIP Customer — High Value",
         "body": (
             "This customer ranks among your top performers with high purchase frequency "
@@ -149,9 +153,10 @@ _INTELLIGENCE = {
     },
     "Regular": {
         "icon": "bi-cart3",
-        "color": "#10b981",
-        "bg": "rgba(16,185,129,0.08)",
-        "border": "rgba(16,185,129,0.35)",
+        "icon_color": "#34d399",
+        "color": "#34d399",
+        "bg": "rgba(52,211,153,0.1)",
+        "border": "rgba(52,211,153,0.3)",
         "title": "Regular Customer — Steady Engagement",
         "body": (
             "An active, reliable buyer who consistently engages with your brand. "
@@ -162,9 +167,10 @@ _INTELLIGENCE = {
     },
     "At Risk": {
         "icon": "bi-exclamation-triangle",
-        "color": "#ef4444",
-        "bg": "rgba(239,68,68,0.08)",
-        "border": "rgba(239,68,68,0.35)",
+        "icon_color": "#fb7185",
+        "color": "#fb7185",
+        "bg": "rgba(251,113,133,0.1)",
+        "border": "rgba(251,113,133,0.3)",
         "title": "At-Risk Customer — Needs Intervention",
         "body": (
             "This customer's purchase recency is high — they may be disengaging or churning. "
@@ -515,7 +521,51 @@ def recommendations():
 
 
 # ═══════════════════════════════════════════════════════════════════════════
-# ROUTE  4 — ANALYTICS
+# ROUTE  4 — NEXT BEST ACTION
+# ═══════════════════════════════════════════════════════════════════════════
+@app.route("/nba", methods=["GET", "POST"])
+def nba_route():
+    customer_id = None
+    customer_details = None
+    actions = []
+    error = None
+
+    if request.method == "POST":
+        raw_id = request.form.get("customer_id", "").strip()
+        if not raw_id:
+            error = "Please enter a Customer ID."
+        else:
+            try:
+                customer_id = int(float(raw_id))
+                row_df = DF_CUSTOMERS[DF_CUSTOMERS["CustomerID"] == customer_id]
+                
+                if row_df.empty:
+                    error = f"Customer ID {customer_id} not found."
+                else:
+                    cust = row_df.iloc[0]
+                    customer_details = {
+                        "id": customer_id,
+                        "segment": cust["Segment"],
+                        "recency": int(cust["Recency"]),
+                        "frequency": int(cust["Frequency"]),
+                        "monetary": fmt_gbp(cust["Monetary"])
+                    }
+                    actions = NBA_ENGINE.get_actions(customer_id)
+            except ValueError:
+                error = "Invalid Customer ID format."
+
+    return render_template(
+        "nba.html",
+        active_page="nba",
+        customer_id=customer_id,
+        customer=customer_details,
+        actions=actions,
+        error=error
+    )
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# ROUTE  5 — ANALYTICS
 # ═══════════════════════════════════════════════════════════════════════════
 @app.route("/analytics")
 def analytics():

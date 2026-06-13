@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+{% block title %}Next Best Action — Smart Retail Analytics{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="page-header">
+  <div class="page-eyebrow">🚀 Strategic Recommendations</div>
+  <h1>Customer Next Best Action</h1>
+  <p>Identify the most impactful strategic steps to engage, retain, and grow your customer relationships.</p>
+</div>
+
+<!-- Search Panel -->
+<div class="search-panel">
+  <div class="search-title">Analyze a Customer</div>
+  <div class="search-sub">Enter a Customer ID to generate personalized strategic recommendations and impact scores.</div>
+  <form method="POST" action="{{ url_for('nba_route') }}" id="nbaForm">
+    <div class="search-row">
+      <div class="input-wrap">
+        <input
+          type="text"
+          name="customer_id"
+          class="input-custom"
+          placeholder="e.g. 12415"
+          value="{{ customer_id or '' }}"
+          autocomplete="off"
+          autofocus
+        >
+        <i class="bi bi-search input-icon"></i>
+      </div>
+      <button type="submit" class="btn-primary">
+        <i class="bi bi-rocket-takeoff"></i> Analyze
+      </button>
+      {% if customer_id %}
+      <a href="{{ url_for('nba_route') }}" class="btn-ghost">
+        <i class="bi bi-x-circle"></i> Clear
+      </a>
+      {% endif %}
+    </div>
+  </form>
+</div>
+
+<!-- Validation Messages -->
+{% if error %}
+<div class="alert-box alert-warn mb-4">
+  <i class="bi bi-exclamation-triangle-fill"></i>
+  <span>{{ error }}</span>
+</div>
+{% endif %}
+
+<!-- Empty / Initial State -->
+{% if not actions and not error %}
+<div class="glass-card">
+  <div class="empty-state">
+    <div class="empty-state-icon">🎯</div>
+    <h3>Start Your Strategy</h3>
+    <p>Enter a Customer ID above to generate Next Best Actions. Our engine analyzes RFM metrics and segment behavior to prioritize the most effective engagement strategies.</p>
+  </div>
+</div>
+{% endif %}
+
+<!-- Results -->
+{% if actions and customer %}
+
+<!-- Customer Summary Section -->
+<div class="profile-card mb-4">
+  <div class="d-flex align-items-center gap-3 flex-wrap">
+    <div class="profile-avatar">
+      <i class="bi bi-person-badge" style="color: white;"></i>
+    </div>
+    <div class="flex-grow-1">
+      <div class="profile-name">Customer #{{ customer.id }} Summary</div>
+      <span class="seg-badge {% if customer.segment == 'VIP' %}seg-vip{% elif customer.segment == 'Regular' %}seg-reg{% else %}seg-risk{% endif %}">
+        <span class="dot"></span>{{ customer.segment }}
+      </span>
+    </div>
+    <div class="d-flex gap-4 text-end">
+      <div class="summary-item">
+        <div class="profile-ltv-label">Recency</div>
+        <div class="fw-bold text-light">{{ customer.recency }} days</div>
+      </div>
+      <div class="summary-item">
+        <div class="profile-ltv-label">Frequency</div>
+        <div class="fw-bold text-light">{{ customer.frequency }} orders</div>
+      </div>
+      <div class="summary-item">
+        <div class="profile-ltv-label">Monetary</div>
+        <div class="profile-ltv-value text-indigo" style="font-size: 1.2rem;">{{ customer.monetary }}</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Action Cards Grid -->
+<div class="row g-4">
+  <div class="col-12 mb-2">
+    <div class="section-title"><i class="bi bi-lightning-charge"></i> Recommended Strategic Actions</div>
+  </div>
+  
+  {% for action in actions %}
+  <div class="col-md-4">
+    <div class="kpi-card h-100">
+      <div class="kpi-glow" data-bg="{% if action.priority == 'High' %}#ef4444{% elif action.priority == 'Medium' %}#f59e0b{% else %}#10b981{% endif %}"></div>
+      
+      <div class="d-flex justify-content-between align-items-start mb-3">
+        <span class="badge {% if action.priority == 'High' %}bg-danger{% elif action.priority == 'Medium' %}bg-warning text-dark{% else %}bg-success{% endif %} rounded-pill px-3">
+          {{ action.priority }} Priority
+        </span>
+        <div class="text-indigo fw-bold" style="font-size: 0.8rem;">Impact: {{ action.impact_score }}%</div>
+      </div>
+
+      <h5 class="text-light fw-bold mb-2">{{ action.title }}</h5>
+      <p class="text-secondary small mb-4" style="line-height: 1.6;">{{ action.description }}</p>
+
+      <div class="mt-auto pt-3 border-top border-secondary border-opacity-10">
+        <div class="progress" style="height: 6px; background: rgba(255,255,255,0.05); border-radius: 10px;">
+          <div class="progress-bar {% if action.priority == 'High' %}bg-danger{% elif action.priority == 'Medium' %}bg-warning{% else %}bg-success{% endif %}" 
+               role="progressbar" 
+               style="width: {{ action.impact_score }}%" 
+               aria-valuenow="{{ action.impact_score }}" 
+               aria-valuemin="0" 
+               aria-valuemax="100"></div>
+        </div>
+      </div>
+      
+      <div class="kpi-accent-bar" data-bg="{% if action.priority == 'High' %}linear-gradient(90deg,#ef4444,transparent){% elif action.priority == 'Medium' %}linear-gradient(90deg,#f59e0b,transparent){% else %}linear-gradient(90deg,#10b981,transparent){% endif %}"></div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+{% endif %}
+{% endblock %}
+
+{% block page_scripts %}
+<script>
+  // Apply all dynamic styles from data-* attributes
+  document.querySelectorAll('[data-bg]').forEach(function(el) {
+    el.style.background = el.getAttribute('data-bg');
+    el.style.backgroundColor = el.getAttribute('data-bg'); // fallback
+  });
+</script>
+{% endblock %}
