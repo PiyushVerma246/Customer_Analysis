@@ -20,9 +20,14 @@ try:
 
     cats = ['Recency', 'Frequency', 'Monetary', 'Recency']
     vals = [round(r_pct, 3), round(f_pct, 3), round(m_pct, 3), round(r_pct, 3)]
+    def _hex_to_rgba(hex_color, alpha=0.1):
+        h = hex_color.lstrip('#')
+        r_c, g_c, b_c = int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16)
+        return f"rgba({r_c},{g_c},{b_c},{alpha})"
+
     fig_radar = go.Figure(go.Scatterpolar(
         r=vals, theta=cats, fill='toself',
-        fillcolor=f'{clr}1a',
+        fillcolor=_hex_to_rgba(clr, 0.1),
         line=dict(color=clr, width=2.5),
         marker=dict(size=8, color=clr),
         hovertemplate='%{theta}: <b>%{r:.0%}</b><extra></extra>',
@@ -43,8 +48,8 @@ try:
         'f_pct':      round(f_pct * 100, 1),
         'm_pct':      round(m_pct * 100, 1),
         'top_pct':    f'{100 - pct_rank*100:.0f}',
-        'avg_recency':  f'{df[\"Recency\"].mean():.0f}',
-        'avg_frequency': f'{df[\"Frequency\"].mean():.1f}',
+        'avg_recency':  f'{df["Recency"].mean():.0f}',
+        'avg_frequency': f'{df["Frequency"].mean():.1f}',
         'avg_monetary':  fmt_gbp(df['Monetary'].mean()),
         'chart_radar':   to_json(fig_radar),
         'intel':         _INTELLIGENCE.get(seg, _INTELLIGENCE['Regular']),

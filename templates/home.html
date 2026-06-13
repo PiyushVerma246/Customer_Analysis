@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Retail Analytics — Unsupervised Customer Intelligence</title>
+
+  <!-- Google Fonts (Outfit for headings, Inter for UI text) -->
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <!-- Custom CSS -->
+  <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+
+  <style>
+    body {
+      background: #010409;
+      color: #94a3b8;
+      overflow-x: hidden;
+      min-height: 100vh;
+      font-family: 'Inter', sans-serif;
+    }
+
+    h1, h2, h3, h4, h5, .landing-header .navbar-brand {
+      font-family: 'Outfit', sans-serif;
+    }
+
+    /* Spotlights & Glowing Backdrops */
+    .mesh-spotlight {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(140px);
+      opacity: 0.15;
+      pointer-events: none;
+      z-index: 0;
+      animation: radialPulse 8s ease-in-out infinite alternate;
+    }
+    .spot-violet {
+      top: -10%; left: 10%;
+      width: 700px; height: 700px;
+      background: radial-gradient(circle, #a855f7 0%, transparent 70%);
+      animation-delay: -2s;
+    }
+    .spot-indigo {
+      top: 40%; right: -5%;
+      width: 800px; height: 800px;
+      background: radial-gradient(circle, #6366f1 0%, transparent 70%);
+      animation-delay: -4s;
+    }
+    .spot-cyan {
+      bottom: -5%; left: 15%;
+      width: 700px; height: 700px;
+      background: radial-gradient(circle, #06b6d4 0%, transparent 70%);
+    }
+
+    /* Ambient Matrix-style Grid overlay */
+    .hero-grid {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background-image: 
+        radial-gradient(rgba(99, 102, 241, 0.08) 1px, transparent 1px),
+        linear-gradient(rgba(255, 255, 255, 0.008) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /* Premium Glass Header Navigation */
+    .landing-header {
+      background: rgba(2, 6, 23, 0.65);
+      backdrop-filter: blur(25px);
+      -webkit-backdrop-filter: blur(25px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      position: fixed;
+      top: 0; left: 0; width: 100%;
+      z-index: 1000;
+      padding: 0.95rem 2.5rem;
+    }
+
+    .landing-header .navbar-brand {
+      font-weight: 800;
+      font-size: 1.25rem;
+      color: var(--text1);
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      text-decoration: none;
+    }
+
+    .navbar-brand-logo {
+      width: 34px; height: 34px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--indigo), var(--purple));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.15rem;
+      box-shadow: 0 4px 16px rgba(99, 102, 241, 0.45);
+    }
+
+    .landing-nav-link {
+      font-size: 0.86rem;
+      font-weight: 600;
+      color: var(--text2);
+      text-decoration: none;
+      padding: 0.5rem 1.25rem;
+      transition: all 0.25s ease;
+      position: relative;
+    }
+
+    .landing-nav-link::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 50%;
+      width: 0%; height: 2px;
+      background: var(--indigo);
+      transition: all 0.25s;
+      transform: translateX(-50%);
+    }
+
+    .landing-nav-link:hover {
+      color: var(--text1);
+    }
+
+    .landing-nav-link:hover::after {
+      width: 50%;
+    }
+
+    /* Hero Area Styling */
+    .hero-section {
+      padding-top: 11rem;
+      padding-bottom: 7rem;
+      position: relative;
+      z-index: 10;
+      text-align: center;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      background: rgba(99, 102, 241, 0.08);
+      border: 1px solid rgba(99, 102, 241, 0.25);
+      color: #a5b4fc;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 0.4rem 0.95rem;
+      border-radius: 999px;
+      margin-bottom: 1.8rem;
+      animation: fadeIn 1s ease;
+    }
+
+    .hero-badge span {
+      width: 6px; height: 6px;
+      background: #06b6d4;
+      border-radius: 50%;
+      box-shadow: 0 0 8px #06b6d4;
+      animation: pulse 2s infinite;
+    }
+
+    .hero-title {
+      font-size: clamp(2.6rem, 5.5vw, 4.8rem);
+      font-weight: 900;
+      line-height: 1.1;
+      margin-bottom: 1.8rem;
+      letter-spacing: -0.03em;
+    }
+
+    .hero-sub {
+      font-size: 1.15rem;
+      color: var(--text2);
+      max-width: 760px;
+      margin: 0 auto 2.8rem;
+      line-height: 1.7;
+    }
+
+    /* 3D Dashboard Mock Widget */
+    .hero-preview-container {
+      max-width: 940px;
+      margin: 0 auto;
+      perspective: 1200px;
+    }
+
+    .hero-preview-card {
+      background: rgba(10, 20, 40, 0.65);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      border-radius: 20px;
+      padding: 1.5rem;
+      box-shadow: 
+        0 40px 120px rgba(0, 0, 0, 0.85),
+        0 0 60px rgba(99, 102, 241, 0.06);
+      transform: rotateX(7deg) rotateY(-2deg);
+      transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .hero-preview-card:hover {
+      transform: rotateX(2deg) rotateY(0deg) scale(1.01);
+      border-color: rgba(99, 102, 241, 0.22);
+      box-shadow: 
+        0 50px 140px rgba(0, 0, 0, 0.9),
+        0 0 80px rgba(99, 102, 241, 0.12);
+    }
+
+    .preview-header {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      padding-bottom: 0.85rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .preview-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+    }
+
+    /* Bento Grid Re-design */
+    .bento-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+      margin-top: 3.5rem;
+    }
+
+    .bento-item {
+      background: rgba(10, 18, 36, 0.45);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: var(--r);
+      padding: 2rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .bento-item:hover {
+      border-color: rgba(99, 102, 241, 0.25);
+      background: rgba(10, 18, 36, 0.6);
+      transform: translateY(-5px);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.6), 0 0 30px rgba(99,102,241,0.08);
+    }
+
+    .bento-icon {
+      font-size: 1.6rem;
+      color: var(--indigo);
+      margin-bottom: 1.25rem;
+      background: rgba(99, 102, 241, 0.05);
+      width: 46px; height: 46px;
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      border: 1px solid rgba(99, 102, 241, 0.18);
+    }
+
+    .bento-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--text1);
+      margin-bottom: 0.6rem;
+    }
+
+    .bento-desc {
+      font-size: 0.84rem;
+      color: var(--text2);
+      line-height: 1.6;
+      margin-bottom: 1.8rem;
+    }
+
+    .bento-col-2 {
+      grid-column: span 2;
+    }
+
+    /* ROI Calculator UI redesign */
+    .calculator-container {
+      max-width: 940px;
+      margin: 4.5rem auto 0;
+      background: rgba(10, 18, 36, 0.5);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      padding: 3rem;
+      border-radius: 24px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .calculator-container::before {
+      content: '';
+      position: absolute;
+      top:-50%; left:-50%;
+      width:200%; height:200%;
+      background: radial-gradient(circle at 75% 75%, rgba(99, 102, 241, 0.06) 0%, transparent 60%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .calc-slider-header span.val {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: var(--indigo);
+      text-shadow: 0 0 15px rgba(99, 102, 241, 0.3);
+    }
+
+    .slider-custom {
+      -webkit-appearance: none;
+      height: 7px;
+      background: rgba(255,255,255,0.06);
+      border-radius: 99px;
+      margin: 0.5rem 0;
+    }
+
+    .slider-custom::-webkit-slider-thumb {
+      width: 20px; height: 20px;
+      background: linear-gradient(135deg, var(--indigo), var(--purple));
+      box-shadow: 0 0 15px rgba(99, 102, 241, 0.6);
+      border: 2px solid #fff;
+    }
+
+    .roi-metric-card {
+      background: rgba(255, 255, 255, 0.012);
+      border: 1px solid rgba(255,255,255,0.04);
+      border-radius: 16px;
+      padding: 1.5rem;
+      text-align: center;
+      transition: all 0.3s ease;
+    }
+
+    .roi-metric-card:hover {
+      border-color: rgba(99, 102, 241, 0.15);
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .roi-metric-val {
+      font-size: 2.1rem;
+      font-weight: 900;
+      color: var(--emerald);
+      text-shadow: 0 0 20px rgba(16, 185, 129, 0.25);
+      margin-bottom: 0.35rem;
+      transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .roi-metric-lbl {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--text3);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    /* Keyframes for SVG animation */
+    @keyframes pulse-cluster {
+      0%, 100% { transform: scale(1); opacity: 0.8; }
+      50% { transform: scale(1.15); opacity: 1; }
+    }
+    @keyframes orbit {
+      100% { transform: rotate(360deg); }
+    }
+
+    .svg-node-vip { fill: var(--purple); filter: drop-shadow(0 0 6px var(--purple)); animation: pulse-cluster 3s infinite ease-in-out; }
+    .svg-node-reg { fill: var(--emerald); filter: drop-shadow(0 0 6px var(--emerald)); animation: pulse-cluster 3s infinite ease-in-out -1s; }
+    .svg-node-risk { fill: var(--rose); filter: drop-shadow(0 0 6px var(--rose)); animation: pulse-cluster 3s infinite ease-in-out -2s; }
+  </style>
+</head>
+<body>
+
+  <!-- Mesh Spotlights -->
+  <div class="mesh-spotlight spot-violet"></div>
+  <div class="mesh-spotlight spot-indigo"></div>
+  <div class="mesh-spotlight spot-cyan"></div>
+  <div class="hero-grid"></div>
+
+  <!-- Header Navigation -->
+  <header class="landing-header">
+    <div class="container-xl d-flex justify-content-between align-items-center">
+      <a href="#" class="navbar-brand">
+        <div class="navbar-brand-logo">🛍️</div>
+        <span class="text-white text-gradient-moving font-weight-900">Smart Retail</span>
+      </a>
+      
+      <nav class="d-none d-md-flex align-items-center">
+        <a href="#features" class="landing-nav-link">Features</a>
+        <a href="#roi" class="landing-nav-link">ROI Calculator</a>
+        <a href="#integrations" class="landing-nav-link">Integrations</a>
+      </nav>
+
+      <div>
+        <a href="{{ url_for('login') }}" class="btn-primary-custom py-2 px-3 fs-8 btn-glowing-neon">
+          <i class="bi bi-box-arrow-in-right me-1"></i>Launch Platform
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero-section container-xl">
+    <div class="hero-badge">
+      <span></span> Machine Learning Cluster Core v2.4
+    </div>
+    
+    <h1 class="hero-title text-gradient-moving">Unsupervised Customer Intelligence<br>For Growing Brands</h1>
+    
+    <p class="hero-sub">
+      Automatically cluster buyer transactions using dynamic RFM statistics, extract personalized recommendation rules, and run secure multi-tenant marketing workflows.
+    </p>
+
+    <div class="hero-ctas">
+      <a href="{{ url_for('login') }}" class="btn-primary-custom px-4 py-3 btn-glowing-neon">
+        <i class="bi bi-rocket-takeoff-fill me-2"></i>Enter Retailer Portal
+      </a>
+      <a href="#features" class="btn-hero-outline">
+        <i class="bi bi-compass-fill me-2"></i>Explore Platform
+      </a>
+    </div>
+
+    <!-- 3D Dashboard Mock Widget -->
+    <div class="hero-preview-container">
+      <div class="hero-preview-card">
+        <div class="preview-header">
+          <div class="preview-dot" style="background:#ef4444;"></div>
+          <div class="preview-dot" style="background:#f59e0b;"></div>
+          <div class="preview-dot" style="background:#10b981;"></div>
+          <div class="text-muted ms-2" style="font-size: 0.65rem; font-family: monospace;">node://workspace-apex-retailer.secure</div>
+        </div>
+        
+        <div class="row g-3 text-start">
+          <div class="col-md-4">
+            <div class="p-3 border border-dark rounded-4" style="background: rgba(255,255,255,0.015);">
+              <div style="font-size:0.65rem; color:var(--text3); text-transform:uppercase; letter-spacing: 0.05em;">VIP Segment LTV</div>
+              <div class="text-white fs-4 font-weight-900 mt-1">£142,548</div>
+              <span class="badge seg-vip mt-2"><span class="dot"></span> 27% Base</span>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="p-3 border border-dark rounded-4" style="background: rgba(255,255,255,0.015);">
+              <div style="font-size:0.65rem; color:var(--text3); text-transform:uppercase; letter-spacing: 0.05em;">At-Risk Buyers</div>
+              <div class="text-white fs-4 font-weight-900 mt-1">1,210</div>
+              <span class="badge seg-risk mt-2"><span class="dot"></span> Needs Action</span>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="p-3 border border-dark rounded-4" style="background: rgba(255,255,255,0.015);">
+              <div style="font-size:0.65rem; color:var(--text3); text-transform:uppercase; letter-spacing: 0.05em;">K-Means Clusters</div>
+              <div class="text-white fs-4 font-weight-900 mt-1">K = 3</div>
+              <span class="badge seg-reg mt-2"><span class="dot"></span> Recalculated</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Bento Grid -->
+  <section class="py-5 container-xl" id="features" style="position:relative; z-index:10;">
+    <div class="text-center mb-5">
+      <span class="section-tag">Feature Matrix</span>
+      <h2 class="text-white font-weight-900 fs-2">Designed for Multi-User Retail Success</h2>
+      <p style="max-width: 600px; margin: 0 auto;" class="text-muted fs-8">
+        Unlock actionable customer lifecycle triggers with tools that scale dynamically for each independent retail merchant.
+      </p>
+    </div>
+
+    <div class="bento-grid">
+      <!-- Card 1: K-Means Segmentation with Animated SVG -->
+      <div class="bento-item bento-col-2">
+        <div>
+          <div class="bento-icon"><i class="bi bi-circle-square"></i></div>
+          <h3 class="bento-title">Unsupervised K-Means Clustering</h3>
+          <p class="bento-desc">Analyze Recency, Frequency, and Monetary scores. Our algorithm groups your customer logs into structured segments automatically.</p>
+        </div>
+        
+        <div class="bento-graphic">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="fs-9 font-weight-700 text-white">Dynamic Segment Clusters</span>
+            <span style="font-size: 0.62rem; color: var(--indigo); font-family: monospace;">algo://k-means-v2</span>
+          </div>
+          <div class="d-flex align-items-center justify-content-center" style="height: 120px;">
+            <!-- Animated SVG Clusters -->
+            <svg viewBox="0 0 300 120" style="width: 100%; height: 100%;">
+              <!-- Grid lines -->
+              <line x1="0" y1="110" x2="300" y2="110" stroke="rgba(255,255,255,0.05)" stroke-width="1" />
+              <line x1="20" y1="0" x2="20" y2="120" stroke="rgba(255,255,255,0.05)" stroke-width="1" />
+              <!-- Centroid VIP -->
+              <circle cx="80" cy="40" r="14" fill="rgba(168,85,247,0.06)" stroke="rgba(168,85,247,0.2)" stroke-width="1" />
+              <!-- Centroid Regular -->
+              <circle cx="210" cy="50" r="16" fill="rgba(16,185,129,0.06)" stroke="rgba(16,185,129,0.2)" stroke-width="1" />
+              <!-- Centroid At-Risk -->
+              <circle cx="150" cy="90" r="14" fill="rgba(239,68,68,0.06)" stroke="rgba(239,68,68,0.2)" stroke-width="1" />
+              <!-- Group VIP dots -->
+              <circle cx="80" cy="40" r="4" class="svg-node-vip" />
+              <circle cx="68" cy="32" r="3.5" class="svg-node-vip" style="animation-delay:0.5s;" />
+              <circle cx="92" cy="48" r="3" class="svg-node-vip" style="animation-delay:1.2s;" />
+              <!-- Group Regular dots -->
+              <circle cx="210" cy="50" r="4" class="svg-node-reg" />
+              <circle cx="198" cy="42" r="3" class="svg-node-reg" style="animation-delay:0.3s;" />
+              <circle cx="222" cy="58" r="3.5" class="svg-node-reg" style="animation-delay:0.8s;" />
+              <!-- Group At Risk dots -->
+              <circle cx="150" cy="90" r="4" class="svg-node-risk" />
+              <circle cx="138" cy="94" r="3" class="svg-node-risk" style="animation-delay:0.6s;" />
+              <circle cx="162" cy="86" r="3.5" class="svg-node-risk" style="animation-delay:1.5s;" />
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 2: Product Recommendations -->
+      <div class="bento-item">
+        <div>
+          <div class="bento-icon"><i class="bi bi-robot"></i></div>
+          <h3 class="bento-title">Product Rule Miner</h3>
+          <p class="bento-desc">Uncover high-lift product relationships automatically from transactions.</p>
+        </div>
+        
+        <div class="bento-graphic justify-content-center">
+          <div class="p-3 border border-dark rounded-3 position-relative overflow-hidden" style="background: rgba(255,255,255,0.015);">
+            <div style="font-size:0.62rem; color:var(--text3); text-transform:uppercase;">Antecedent Item</div>
+            <div class="text-white fs-9 font-weight-700 mb-2">Organic Tea Box</div>
+            <div style="font-size:0.62rem; color:var(--text3); text-transform:uppercase;">Consequent Rec</div>
+            <div class="text-indigo fs-9 font-weight-700">Ceramic Teacup</div>
+            <span class="badge position-absolute" style="top:10px; right:10px; background:rgba(99,102,241,0.15); color:#a5b4fc; border:1px solid rgba(99,102,241,0.3); font-size:0.65rem;">+4.5x Lift</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 3: Secure Data Synchronization -->
+      <div class="bento-item">
+        <div>
+          <div class="bento-icon"><i class="bi bi-database-fill-gear"></i></div>
+          <h3 class="bento-title">Merchant DB Update Hub</h3>
+          <p class="bento-desc">Drag & drop transactional customer spreadsheets, or sync via Shopify APIs. Updates segment records instantly.</p>
+        </div>
+        
+        <div class="bento-graphic justify-content-center text-center">
+          <div class="py-3 px-1 border border-dashed rounded-3 border-indigo" style="background: rgba(99,102,241,0.03); cursor:pointer;">
+            <i class="bi bi-cloud-upload-fill text-indigo fs-3 mb-1 d-block" style="animation: pulse 2s infinite;"></i>
+            <span style="font-size:0.7rem; font-weight:600;" class="text-white">Simulate Update in Real-time</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 4: Multi-Tenant Architecture -->
+      <div class="bento-item bento-col-2">
+        <div>
+          <div class="bento-icon"><i class="bi bi-shield-fill-check"></i></div>
+          <h3 class="bento-title">Isolated Retail Schema Isolation</h3>
+          <p class="bento-desc">Built for multiple concurrent stores. Each retailer accesses their own localized database segment securely. Your client transactions are encrypted and processed within localized tenant threads.</p>
+        </div>
+        
+        <div class="bento-graphic">
+          <div class="d-flex justify-content-between align-items-center fs-9 font-weight-700 text-white mb-2">
+            <span>Isolated Tenant Pools</span>
+            <span class="text-emerald" style="font-size: 0.65rem;"><i class="bi bi-shield-check me-1"></i>Active Shield</span>
+          </div>
+          <div class="d-flex gap-2">
+            <div class="flex-grow-1 p-2 border border-dark rounded-3 text-center" style="background: rgba(255,255,255,0.015);">
+              <div style="font-size: 0.6rem; color: var(--text3);">TENANT_ID_01</div>
+              <span class="text-white fs-9 font-weight-700">Apex Store</span>
+            </div>
+            <div class="flex-grow-1 p-2 border border-dark rounded-3 text-center" style="background: rgba(255,255,255,0.015);">
+              <div style="font-size: 0.6rem; color: var(--text3);">TENANT_ID_02</div>
+              <span class="text-white fs-9 font-weight-700">Vertex LLC</span>
+            </div>
+            <div class="flex-grow-1 p-2 border border-dark rounded-3 text-center" style="background: rgba(255,255,255,0.015);">
+              <div style="font-size: 0.6rem; color: var(--text3);">TENANT_ID_03</div>
+              <span class="text-white fs-9 font-weight-700">Pulse POS</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Interactive ROI Calculator Section -->
+  <section class="py-6 container-xl" id="roi" style="position:relative; z-index:10;">
+    <div class="calculator-container">
+      <div class="text-center mb-5">
+        <span class="section-tag">ROI Estimates</span>
+        <h2 class="text-white font-weight-900 fs-3">Determine Your Store's Profit Potential</h2>
+        <p class="text-muted fs-8">Estimate the monthly revenue boost unlocked by segmenting VIPs and targeting disengaged shoppers.</p>
+      </div>
+
+      <div class="row g-4">
+        <!-- Sliders -->
+        <div class="col-md-6 border-end border-dark pe-md-5">
+          <div class="calc-slider-wrap">
+            <div class="calc-slider-header">
+              <span>Annual Revenue (£)</span>
+              <span class="val" id="revVal">£1,200,000</span>
+            </div>
+            <input 
+              type="range" 
+              class="slider-custom" 
+              id="revSlider" 
+              min="100000" 
+              max="5000000" 
+              step="50000" 
+              value="1200000"
+              oninput="calculateROI()"
+            >
+          </div>
+
+          <div class="calc-slider-wrap m-0">
+            <div class="calc-slider-header">
+              <span>At-Risk Customer Share (%)</span>
+              <span class="val" id="riskVal">24%</span>
+            </div>
+            <input 
+              type="range" 
+              class="slider-custom" 
+              id="riskSlider" 
+              min="5" 
+              max="60" 
+              step="1" 
+              value="24"
+              oninput="calculateROI()"
+            >
+          </div>
+        </div>
+
+        <!-- Calculated Metrics Outputs -->
+        <div class="col-md-6 d-flex flex-column justify-content-center ps-md-5">
+          <div class="row g-3">
+            <div class="col-sm-6">
+              <div class="roi-metric-card">
+                <div class="roi-metric-val" id="vipUnlock">£1,450</div>
+                <div class="roi-metric-lbl">VIP Loyalty Lift / mo</div>
+              </div>
+            </div>
+            <div class="col-sm-6">
+              <div class="roi-metric-card">
+                <div class="roi-metric-val" id="churnYield">£2,380</div>
+                <div class="roi-metric-lbl">Win-Back Recovery / mo</div>
+              </div>
+            </div>
+            <div class="col-12 mt-3">
+              <div class="roi-metric-card" style="background: rgba(16,185,129,0.04); border-color: rgba(16,185,129,0.25);">
+                <div class="roi-metric-val text-emerald fs-3 font-weight-900" id="totalUnlock">£3,830</div>
+                <div class="roi-metric-lbl" style="color: #6ee7b7;">Estimated Monthly Value Unlocked</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Integrations Section -->
+  <section class="py-5 text-center container-xl" id="integrations" style="position:relative; z-index:10;">
+    <span class="section-tag">Supported Nodes</span>
+    <h2 class="text-white font-weight-800 fs-4 mb-2">Connects to Your Core Platforms</h2>
+    <p class="text-muted fs-8">Import your customer logs effortlessly using direct database channels.</p>
+
+    <div class="brand-logo-grid">
+      <div class="brand-logo-item">
+        <i class="bi bi-bag-heart-fill" style="color:#96bf48;"></i> Shopify
+      </div>
+      <div class="brand-logo-item">
+        <i class="bi bi-app" style="color:#fff;"></i> Square POS
+      </div>
+      <div class="brand-logo-item">
+        <i class="bi bi-cart-fill" style="color:#96588a;"></i> WooCommerce
+      </div>
+      <div class="brand-logo-item">
+        <i class="bi bi-terminal" style="color:#38bdf8;"></i> Custom CSV
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA section -->
+  <section class="py-6 text-center container-xl" style="position:relative; z-index:10;">
+    <div class="p-5 rounded-4 border border-dark text-center" style="background: radial-gradient(circle at center, rgba(99,102,241,0.08) 0%, rgba(10,18,36,0.3) 100%); border-color:rgba(99,102,241,0.2) !important;">
+      <h2 class="text-white font-weight-900 mb-3 fs-3">Ready to Unlock Customer Growth?</h2>
+      <p class="text-muted fs-8 max-w-md mx-auto mb-4">
+        Deploy cluster modeling, review product recommendations, and optimize campaigns for your business segments.
+      </p>
+      <a href="{{ url_for('login') }}" class="btn-primary-custom px-4 py-3 btn-glowing-neon">
+        <i class="bi bi-box-arrow-in-right me-2"></i>Enter Retailer Portal
+      </a>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="landing-footer">
+    <div class="container-xl">
+      <div class="mb-3">
+        <span class="text-white font-weight-800 fs-5">Smart Retail Analytics</span>
+      </div>
+      <div class="mb-4 text-muted" style="font-size:0.75rem;">
+        Secure Multi-Tenant Customer Segment Engine Node v2.4
+      </div>
+      <div style="font-size:0.72rem;">
+        &copy; 2026 Smart Retail Platforms Inc. All secure connections cryptographically isolated.
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    function calculateROI() {
+      const annualRev = parseFloat(document.getElementById('revSlider').value);
+      const riskShare = parseFloat(document.getElementById('riskSlider').value);
+
+      // Label updates
+      document.getElementById('revVal').textContent = '£' + annualRev.toLocaleString();
+      document.getElementById('riskVal').textContent = riskShare + '%';
+
+      // Computations
+      const monthlyRev = annualRev / 12;
+      
+      // Assume VIPs drive 40% of revenue. Standard loyalty optimization boosts VIP value by 5%
+      const vipLift = monthlyRev * 0.40 * 0.05;
+      
+      // Win-back targeting recovers 15% of at-risk revenue share
+      const churnRecovery = monthlyRev * (riskShare / 100) * 0.15;
+      
+      const totalBoost = vipLift + churnRecovery;
+
+      // Metric display updates with transition pops
+      const vipEl = document.getElementById('vipUnlock');
+      const churnEl = document.getElementById('churnYield');
+      const totalEl = document.getElementById('totalUnlock');
+
+      // Add a scale scale transform trigger
+      [vipEl, churnEl, totalEl].forEach(el => {
+        el.style.transform = 'scale(1.05)';
+        setTimeout(() => el.style.transform = 'scale(1)', 100);
+      });
+
+      vipEl.textContent = '£' + Math.round(vipLift).toLocaleString();
+      churnEl.textContent = '£' + Math.round(churnRecovery).toLocaleString();
+      totalEl.textContent = '£' + Math.round(totalBoost).toLocaleString();
+    }
+
+    // Run computation once at start
+    document.addEventListener("DOMContentLoaded", () => {
+      calculateROI();
+    });
+  </script>
+
+  <!-- Bootstrap 5 JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

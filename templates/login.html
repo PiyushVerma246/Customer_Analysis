@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Retailer Portal — Smart Retail Analytics</title>
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/dropdown.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <!-- Custom CSS -->
+  <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+
+  <style>
+    body {
+      background: #010409;
+      color: #94a3b8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      overflow-y: auto;
+      padding: 2rem 1rem;
+      position: relative;
+      font-family: 'Inter', sans-serif;
+    }
+
+    h2, h3, .retailer-badge {
+      font-family: 'Outfit', sans-serif;
+    }
+
+    /* Ambient mesh background spots */
+    .bg-spot {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(120px);
+      opacity: 0.12;
+      pointer-events: none;
+      z-index: 0;
+      width: 500px; height: 500px;
+      animation: radialPulse 10s ease-in-out infinite alternate;
+    }
+
+    .login-container {
+      width: 100%;
+      max-width: 480px;
+      margin: auto;
+      position: relative;
+      z-index: 10;
+    }
+
+    /* Redesigned Card with dynamic adaptive glows */
+    .login-card {
+      background: rgba(10, 20, 40, 0.72);
+      backdrop-filter: blur(25px);
+      -webkit-backdrop-filter: blur(25px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 24px;
+      padding: 2.8rem;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.75);
+    }
+
+    /* Shifting border gradient strip */
+    .login-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 4px;
+      background: var(--active-glow-gradient, linear-gradient(90deg, var(--indigo), var(--purple)));
+      transition: background 0.4s ease;
+    }
+
+    /* Interactive Adaptive instances glows */
+    .login-card.glow-apex {
+      border-color: rgba(168, 85, 247, 0.28);
+      box-shadow: 0 30px 90px rgba(0, 0, 0, 0.8), 0 0 60px rgba(168, 85, 247, 0.15);
+    }
+    .login-card.glow-vertex {
+      border-color: rgba(6, 182, 212, 0.28);
+      box-shadow: 0 30px 90px rgba(0, 0, 0, 0.8), 0 0 60px rgba(6, 182, 212, 0.15);
+    }
+    .login-card.glow-pulse {
+      border-color: rgba(239, 68, 68, 0.28);
+      box-shadow: 0 30px 90px rgba(0, 0, 0, 0.8), 0 0 60px rgba(239, 68, 68, 0.15);
+    }
+    .login-card.glow-local {
+      border-color: rgba(99, 102, 241, 0.28);
+      box-shadow: 0 30px 90px rgba(0, 0, 0, 0.8), 0 0 60px rgba(99, 102, 241, 0.15);
+    }
+
+    .login-logo {
+      width: 56px; height: 56px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, var(--indigo), var(--purple));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.7rem;
+      margin: 0 auto 1.5rem;
+      box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4);
+      animation: pulse 2.5s infinite;
+    }
+
+    .login-header h2 {
+      font-size: 1.75rem;
+      font-weight: 800;
+      color: var(--text1);
+      margin-bottom: 0.45rem;
+      text-align: center;
+      letter-spacing: -0.01em;
+    }
+
+    .login-header p {
+      font-size: 0.82rem;
+      color: var(--text2);
+      text-align: center;
+      margin-bottom: 2rem;
+      line-height: 1.5;
+    }
+
+    .login-tabs {
+      display: flex;
+      background: rgba(255, 255, 255, 0.02);
+      padding: 5px;
+      border-radius: 12px;
+      margin-bottom: 2rem;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .login-tab-btn {
+      flex: 1;
+      border: none;
+      background: transparent;
+      color: var(--text2);
+      font-size: 0.82rem;
+      font-weight: 600;
+      padding: 0.55rem 0.85rem;
+      border-radius: 9px;
+      transition: all 0.25s ease;
+      cursor: pointer;
+    }
+
+    .login-tab-btn.active {
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text1);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+    }
+
+    .input-group-custom {
+      position: relative;
+      margin-bottom: 1.4rem;
+    }
+
+    .input-group-custom i {
+      position: absolute;
+      left: 1.1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text3);
+      font-size: 1.1rem;
+      pointer-events: none;
+      transition: color 0.2s;
+    }
+
+    .form-control-login {
+      padding-left: 3rem !important;
+    }
+
+    .form-control-custom:focus + i {
+      color: var(--indigo);
+    }
+
+    .btn-login {
+      width: 100%;
+      padding: 0.8rem;
+      font-size: 0.95rem;
+      font-weight: 700;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 0.55rem;
+      margin-top: 2rem;
+    }
+
+    .divider-text {
+      display: flex;
+      align-items: center;
+      text-align: center;
+      font-size: 0.72rem;
+      color: var(--text3);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin: 1.8rem 0;
+    }
+
+    .divider-text::before,
+    .divider-text::after {
+      content: '';
+      flex: 1;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .divider-text:not(:empty)::before { margin-right: 1rem; }
+    .divider-text:not(:empty)::after { margin-left: 1rem; }
+
+    .integration-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.75rem;
+    }
+
+    .integration-btn {
+      background: rgba(255, 255, 255, 0.015);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 0.65rem;
+      color: var(--text2);
+      font-size: 0.78rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .integration-btn:hover {
+      background: rgba(255, 255, 255, 0.04);
+      border-color: rgba(255, 255, 255, 0.15);
+      color: var(--text1);
+      transform: translateY(-3px);
+    }
+
+    .integration-btn i {
+      font-size: 1.35rem;
+    }
+
+    /* Circular spinner with trail */
+    .loading-overlay {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: #020617;
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2.5rem;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.4s ease;
+    }
+
+    .loading-overlay.active {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .spinner-ring {
+      display: inline-block;
+      position: relative;
+      width: 80px; height: 80px;
+      margin-bottom: 2rem;
+    }
+    
+    .spinner-ring div {
+      box-sizing: border-box;
+      display: block;
+      position: absolute;
+      width: 68px; height: 68px;
+      margin: 6px;
+      border: 4px solid var(--indigo);
+      border-radius: 50%;
+      animation: spinner-ring 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+      border-color: var(--indigo) transparent transparent transparent;
+    }
+    
+    .spinner-ring div:nth-child(1) { animation-delay: -0.45s; }
+    .spinner-ring div:nth-child(2) { animation-delay: -0.3s; }
+    .spinner-ring div:nth-child(3) { animation-delay: -0.15s; }
+
+    .loader-status {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--text1);
+      margin-bottom: 0.6rem;
+      text-align: center;
+      font-family: 'Outfit', sans-serif;
+    }
+
+    .loader-progress-track {
+      width: 180px; height: 5px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+
+    .loader-progress-fill {
+      height: 100%; width: 0%;
+      background: linear-gradient(90deg, var(--indigo), var(--purple));
+      border-radius: 99px;
+    }
+
+    .retailer-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      background: rgba(168, 85, 247, 0.08);
+      border: 1px solid rgba(168, 85, 247, 0.25);
+      color: #d8b4fe;
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 0.3rem 0.8rem;
+      border-radius: 999px;
+      margin-bottom: 1.25rem;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Ambient Backdrop Glows -->
+  <div class="bg-spot" style="top: 15%; left: 20%; background: radial-gradient(circle, #a855f7 0%, transparent 60%);"></div>
+  <div class="bg-spot" style="bottom: 10%; right: 15%; background: radial-gradient(circle, #6366f1 0%, transparent 60%);"></div>
+
+  <div class="login-container">
+    <div class="login-card glow-apex" id="loginCard">
+      
+      <!-- Loading Screen Overlay -->
+      <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner-ring">
+          <div></div><div></div><div></div><div></div>
+        </div>
+        <div class="loader-status" id="loaderStatus">Initializing secure session...</div>
+        <div class="loader-progress-track">
+          <div class="loader-progress-fill" id="loaderProgress"></div>
+        </div>
+      </div>
+
+      <!-- Header badge logo -->
+      <div class="text-center">
+        <div class="login-logo">🛍️</div>
+        <div class="retailer-badge"><i class="bi bi-shield-lock-fill"></i> Retailer Portal Node</div>
+      </div>
+      
+      <div class="login-header">
+        <h2 class="text-white text-gradient-moving font-weight-900">Welcome Back</h2>
+        <p>Access your isolated customer segments and product recommendation insights</p>
+      </div>
+
+      <!-- Tab Switcher -->
+      <div class="login-tabs">
+        <button class="login-tab-btn active" id="tabSignIn" onclick="switchTab('signin')">Retailer Sign In</button>
+        <button class="login-tab-btn" id="tabSignUp" onclick="switchTab('signup')">Create Account</button>
+      </div>
+
+      <!-- Form Inputs -->
+      <form id="loginForm" onsubmit="handleLoginSubmit(event)">
+        
+        <!-- Store Selector (Triggers dynamic neon border styling updates) -->
+        <div class="mb-3">
+          <label class="form-label-custom" for="storeSelector">Select Retailer Instance</label>
+          <div class="input-group-custom">
+            <select id="storeSelector" class="select-custom form-control-login" required onchange="handleStoreChange()">
+              <option value="apex" data-color="purple" data-gradient="linear-gradient(90deg, #a855f7, #6366f1)">Apex Retail Group (Global)</option>
+              <option value="vertex" data-color="cyan" data-gradient="linear-gradient(90deg, #06b6d4, #10b981)">Vertex Boutique LLC</option>
+              <option value="pulse" data-color="rose" data-gradient="linear-gradient(90deg, #ef4444, #f59e0b)">Pulse Superstores Inc</option>
+              <option value="local" data-color="indigo" data-gradient="linear-gradient(90deg, #6366f1, #8b5cf6)">Independent Merchant (Sandbox)</option>
+            </select>
+            <i class="bi bi-shop"></i>
+          </div>
+        </div>
+
+        <!-- Username / Email -->
+        <div class="mb-3">
+          <label class="form-label-custom" for="retailerEmail" id="emailLabel">Business ID or Email</label>
+          <div class="input-group-custom">
+            <input 
+              type="text" 
+              id="retailerEmail" 
+              class="form-control-custom form-control-login" 
+              placeholder="e.g. manager@apexretail.com" 
+              required
+            >
+            <i class="bi bi-envelope"></i>
+          </div>
+        </div>
+
+        <!-- Password -->
+        <div class="mb-3">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <label class="form-label-custom m-0" for="retailerPassword">Access Password</label>
+            <a href="#" class="forgot-link" onclick="forgotPassword(event)">Forgot Key?</a>
+          </div>
+          <div class="input-group-custom">
+            <input 
+              type="password" 
+              id="retailerPassword" 
+              class="form-control-custom form-control-login" 
+              placeholder="••••••••••••" 
+              required
+            >
+            <i class="bi bi-lock"></i>
+          </div>
+        </div>
+
+        <!-- Checkbox Options -->
+        <div class="d-flex justify-content-between align-items-center mt-3 mb-2">
+          <div class="form-check d-flex align-items-center gap-2 m-0 p-0">
+            <input 
+              class="form-check-input form-check-input-custom m-0" 
+              type="checkbox" 
+              id="rememberMe"
+              checked
+            >
+            <label class="checkbox-lbl" for="rememberMe">
+              Remember this secure console
+            </label>
+          </div>
+        </div>
+
+        <!-- Submission Trigger -->
+        <button type="submit" class="btn-primary-custom btn-login btn-glowing-neon" id="submitBtn">
+          <i class="bi bi-box-arrow-in-right"></i> <span id="btnText">Sign In to Instance</span>
+        </button>
+
+      </form>
+
+      <!-- Grid divider text -->
+      <div class="divider-text" id="dividerText">Or Quick Integrations</div>
+
+      <!-- Quick Platform Connect buttons -->
+      <div class="integration-grid" id="integrationGrid">
+        <div class="integration-btn" onclick="quickConnect('Shopify')">
+          <i class="bi bi-bag-heart-fill" style="color: #96bf48;"></i>
+          <span>Shopify</span>
+        </div>
+        <div class="integration-btn" onclick="quickConnect('Square')">
+          <i class="bi bi-app" style="color: #fff;"></i>
+          <span>Square</span>
+        </div>
+        <div class="integration-btn" onclick="quickConnect('WooCommerce')">
+          <i class="bi bi-cart-fill" style="color: #96588a;"></i>
+          <span>WooCommerce</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    let currentTab = 'signin';
+
+    // Handle retailer instance changes to change neon glow outline colors dynamically
+    function handleStoreChange() {
+      const select = document.getElementById('storeSelector');
+      const card = document.getElementById('loginCard');
+      const opt = select.options[select.selectedIndex];
+      
+      const colorKey = opt.getAttribute('data-color');
+      const gradient = opt.getAttribute('data-gradient');
+      
+      // Update custom variable for gradient border
+      card.style.setProperty('--active-glow-gradient', gradient);
+
+      // Clean other glow classes
+      card.className = "login-card glow-" + colorKey;
+    }
+
+    function switchTab(tab) {
+      if (currentTab === tab) return;
+      currentTab = tab;
+
+      const tabSignIn = document.getElementById('tabSignIn');
+      const tabSignUp = document.getElementById('tabSignUp');
+      const emailLabel = document.getElementById('emailLabel');
+      const retailerEmail = document.getElementById('retailerEmail');
+      const btnText = document.getElementById('btnText');
+      const dividerText = document.getElementById('dividerText');
+      const integrationGrid = document.getElementById('integrationGrid');
+
+      if (tab === 'signin') {
+        tabSignIn.classList.add('active');
+        tabSignUp.classList.remove('active');
+        emailLabel.textContent = "Business ID or Email";
+        retailerEmail.placeholder = "e.g. manager@apexretail.com";
+        btnText.textContent = "Sign In to Instance";
+        dividerText.style.display = 'flex';
+        integrationGrid.style.display = 'grid';
+      } else {
+        tabSignIn.classList.remove('active');
+        tabSignUp.classList.add('active');
+        emailLabel.textContent = "Owner Email";
+        retailerEmail.placeholder = "e.g. register@mybrand.com";
+        btnText.textContent = "Create Retailer Instance";
+        dividerText.style.display = 'none';
+        integrationGrid.style.display = 'none';
+      }
+    }
+
+    function handleLoginSubmit(event) {
+      event.preventDefault();
+      
+      const store = document.getElementById('storeSelector');
+      const storeText = store.options[store.selectedIndex].text;
+      const email = document.getElementById('retailerEmail').value;
+      
+      // Cache settings
+      localStorage.setItem('retailer_org', storeText);
+      localStorage.setItem('retailer_email', email);
+      localStorage.setItem('is_logged_in', 'true');
+
+      // Loader execution
+      const overlay = document.getElementById('loadingOverlay');
+      const status = document.getElementById('loaderStatus');
+      const fill = document.getElementById('loaderProgress');
+      
+      overlay.classList.add('active');
+
+      const steps = [
+        { text: "Securing cryptograph tunnels...", duration: 400 },
+        { text: `Contacting ${storeText} partition...`, duration: 500 },
+        { text: "Validating tenant access keys...", duration: 500 },
+        { text: "Building local analytics cache...", duration: 400 },
+        { text: "Access Granted. Syncing dashboard...", duration: 300 }
+      ];
+
+      let currentStep = 0;
+      let progress = 0;
+      
+      function runNextStep() {
+        if (currentStep >= steps.length) {
+          fill.style.width = '100%';
+          setTimeout(() => {
+            window.location.href = "{{ url_for('dashboard') }}";
+          }, 150);
+          return;
+        }
+        
+        const step = steps[currentStep];
+        status.textContent = step.text;
+        
+        let stepProgress = 0;
+        const stepInterval = 16;
+        const progressIncrement = (stepInterval / step.duration) * (100 / steps.length);
+        
+        const interval = setInterval(() => {
+          progress += progressIncrement;
+          if (progress > 100) progress = 100;
+          fill.style.width = `${progress}%`;
+          
+          stepProgress += stepInterval;
+          if (stepProgress >= step.duration) {
+            clearInterval(interval);
+            currentStep++;
+            runNextStep();
+          }
+        }, stepInterval);
+      }
+
+      runNextStep();
+    }
+
+    function quickConnect(platform) {
+      const overlay = document.getElementById('loadingOverlay');
+      const status = document.getElementById('loaderStatus');
+      const fill = document.getElementById('loaderProgress');
+
+      localStorage.setItem('retailer_org', `${platform} Connected Store`);
+      localStorage.setItem('retailer_email', `integration@${platform.toLowerCase()}.local`);
+      localStorage.setItem('is_logged_in', 'true');
+
+      overlay.classList.add('active');
+
+      const steps = [
+        { text: `Configuring secure OAuth webhook with ${platform}...`, duration: 600 },
+        { text: "Retrieving temporary access tokens...", duration: 500 },
+        { text: "Compiling dashboard workspace...", duration: 600 }
+      ];
+
+      let currentStep = 0;
+      let progress = 0;
+
+      function runNextStep() {
+        if (currentStep >= steps.length) {
+          fill.style.width = '100%';
+          setTimeout(() => {
+            window.location.href = "{{ url_for('dashboard') }}";
+          }, 150);
+          return;
+        }
+
+        const step = steps[currentStep];
+        status.textContent = step.text;
+
+        let stepProgress = 0;
+        const stepInterval = 16;
+        const progressIncrement = (stepInterval / step.duration) * (100 / steps.length);
+
+        const interval = setInterval(() => {
+          progress += progressIncrement;
+          if (progress > 100) progress = 100;
+          fill.style.width = `${progress}%`;
+
+          stepProgress += stepInterval;
+          if (stepProgress >= step.duration) {
+            clearInterval(interval);
+            currentStep++;
+            runNextStep();
+          }
+        }, stepInterval);
+      }
+
+      runNextStep();
+    }
+
+    function forgotPassword(e) {
+      e.preventDefault();
+      alert("Verification link sent. Please review the store administrator mailbox for access guidelines.");
+    }
+  </script>
+
+  <!-- Bootstrap 5 JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -57,6 +57,11 @@
       <i class="bi bi-graph-up-arrow"></i>
       <span>Analytics</span>
     </a>
+    <a href="{{ url_for('update_db') }}"
+       class="nav-link-item {% if active_page == 'update_db' %}active{% endif %}" id="nav-update-db">
+      <i class="bi bi-database-fill-gear"></i>
+      <span>Update Database</span>
+    </a>
   </div>
 
   <!-- Right side -->
@@ -77,6 +82,17 @@
       <div class="status-dot"></div>
       Live
     </div>
+
+    <!-- Retailer Info & Logout -->
+    <div class="nav-stat d-flex align-items-center gap-2" style="border-left: 1px solid var(--border); padding-left: 0.75rem; margin-left: 0.25rem;">
+      <div style="width: 24px; height: 24px; border-radius: 50%; background: linear-gradient(135deg, var(--indigo), var(--purple)); display: flex; align-items: center; justify-content: center; font-size: 0.7rem; color: #fff; box-shadow: 0 2px 8px rgba(99,102,241,0.25);">
+        <i class="bi bi-shop"></i>
+      </div>
+      <span style="font-size: 0.75rem; font-weight: 700; color: var(--text1);" id="sbRetailerOrg">Apex Retail Group</span>
+    </div>
+    <a href="#" onclick="handleLogout(event)" class="nav-link-item text-danger d-flex align-items-center" style="padding: 0.35rem 0.55rem; border-radius: 8px; transition: background 0.2s;" title="Logout Retailer">
+      <i class="bi bi-box-arrow-left" style="font-size: 1.05rem;"></i>
+    </a>
   </div>
 
 </nav>
@@ -113,6 +129,33 @@
   document.querySelectorAll('.stat-card').forEach((el, i) => {
     el.style.animationDelay = (i * 0.07) + 's';
   });
+
+  /* Session and login handlers */
+  document.addEventListener("DOMContentLoaded", () => {
+    const isLoggedIn = localStorage.getItem('is_logged_in') === 'true';
+    const currentPath = window.location.pathname;
+    
+    if (!isLoggedIn && currentPath !== '/login' && currentPath !== '/') {
+      window.location.href = "{{ url_for('login') }}";
+      return;
+    }
+    
+    if (isLoggedIn) {
+      const org = localStorage.getItem('retailer_org') || "Apex Retail Group";
+      const orgLabel = document.getElementById('sbRetailerOrg');
+      if (orgLabel) {
+        orgLabel.textContent = org;
+      }
+    }
+  });
+
+  function handleLogout(e) {
+    e.preventDefault();
+    localStorage.removeItem('is_logged_in');
+    localStorage.removeItem('retailer_org');
+    localStorage.removeItem('retailer_email');
+    window.location.href = "{{ url_for('login') }}";
+  }
 </script>
 
 {% block page_scripts %}{% endblock %}

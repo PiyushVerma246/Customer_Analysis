@@ -1,0 +1,819 @@
+{% extends "base.html" %}
+{% block title %}Database Sync — Smart Retail Analytics{% endblock %}
+{% block breadcrumb %}Update Database{% endblock %}
+
+{% block head_extra %}
+<style>
+  h1, h2, h3, h4, .upload-title, .wizard-title {
+    font-family: 'Outfit', sans-serif;
+  }
+
+  /* Drag and Drop Zone styling */
+  .upload-zone {
+    border: 2px dashed rgba(99, 102, 241, 0.35);
+    background: rgba(10, 20, 40, 0.4);
+    border-radius: var(--r);
+    padding: 4.5rem 2rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .upload-zone:hover, .upload-zone.dragover {
+    border-color: var(--indigo);
+    background: rgba(99, 102, 241, 0.08);
+    box-shadow: 0 15px 40px rgba(99, 102, 241, 0.12);
+  }
+
+  .upload-icon {
+    font-size: 3.2rem;
+    color: var(--indigo);
+    margin-bottom: 1.25rem;
+    display: inline-block;
+    transition: transform 0.35s ease;
+    filter: drop-shadow(0 0 15px rgba(99, 102, 241, 0.4));
+  }
+
+  .upload-zone:hover .upload-icon {
+    transform: translateY(-8px) scale(1.08);
+  }
+
+  .upload-title {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--text1);
+    margin-bottom: 0.5rem;
+  }
+
+  .upload-sub {
+    font-size: 0.84rem;
+    color: var(--text3);
+    margin-bottom: 1.8rem;
+  }
+
+  /* Sync Integration Modular Cards styled like server blades */
+  .sync-card {
+    background: rgba(10, 18, 36, 0.5);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.5rem;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .sync-card::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; width: 3px; height: 100%;
+    background: transparent;
+    transition: background 0.3s;
+  }
+
+  .sync-card:hover {
+    border-color: rgba(99, 102, 241, 0.25);
+    background: rgba(10, 18, 36, 0.65);
+    transform: translateY(-4px);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.5);
+  }
+
+  .sync-card:hover::after {
+    background: var(--indigo);
+  }
+
+  .sync-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+  }
+
+  .sync-logo {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--text1);
+  }
+
+  .sync-logo i {
+    font-size: 1.45rem;
+  }
+
+  .sync-badge {
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 0.2rem 0.65rem;
+    border-radius: 999px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .sync-badge.connected {
+    background: rgba(16, 185, 129, 0.08);
+    color: #6ee7b7;
+    border: 1px solid rgba(16, 185, 129, 0.25);
+    box-shadow: 0 0 10px rgba(16, 185, 129, 0.1);
+  }
+
+  .sync-badge.disconnected {
+    background: rgba(71, 85, 105, 0.08);
+    color: var(--text2);
+    border: 1px solid var(--border);
+  }
+
+  .sync-details {
+    font-size: 0.78rem;
+    color: var(--text2);
+    line-height: 1.6;
+    margin-bottom: 1.25rem;
+  }
+
+  /* Progress simulation wizard */
+  .wizard-card {
+    background: rgba(15, 23, 42, 0.7);
+    border: 1px solid rgba(99, 102, 241, 0.25);
+    border-radius: var(--r);
+    padding: 2.2rem;
+    box-shadow: 0 25px 60px rgba(0,0,0,0.6);
+    display: none;
+    animation: fadeInUp 0.4s ease;
+  }
+
+  .wizard-title {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: var(--text1);
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+
+  .wizard-step-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.85rem;
+    margin-bottom: 1rem;
+    font-size: 0.85rem;
+    color: var(--text2);
+    transition: all 0.3s;
+  }
+
+  .wizard-step-item.pending {
+    color: var(--text3);
+  }
+
+  .wizard-step-item.active {
+    color: var(--indigo);
+    font-weight: 700;
+    text-shadow: 0 0 10px rgba(99,102,241,0.25);
+  }
+
+  .wizard-step-item.complete {
+    color: var(--emerald);
+  }
+
+  .wizard-step-indicator {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+    font-size: 0.6rem;
+    font-weight: 900;
+    transition: all 0.3s;
+  }
+
+  .active .wizard-step-indicator {
+    border-color: var(--indigo);
+    background: rgba(99, 102, 241, 0.12);
+  }
+
+  .complete .wizard-step-indicator {
+    border-color: var(--emerald);
+    background: rgba(16, 185, 129, 0.15);
+    color: var(--emerald);
+    box-shadow: 0 0 8px rgba(16, 185, 129, 0.2);
+  }
+
+  /* Scanline terminal retro log styling */
+  .log-console {
+    background: #02040a;
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 12px;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.74rem;
+    color: #38bdf8;
+    padding: 1rem;
+    height: 125px;
+    overflow-y: auto;
+    margin-bottom: 1.5rem;
+    line-height: 1.6;
+    position: relative;
+  }
+
+  /* Scanlines Overlay */
+  .log-console::before {
+    content: " ";
+    display: block;
+    position: absolute;
+    top: 0; left: 0; bottom: 0; right: 0;
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+    z-index: 2;
+    background-size: 100% 3px, 3px 100%;
+    pointer-events: none;
+  }
+
+  .log-line {
+    margin-bottom: 0.3rem;
+    text-shadow: 0 0 2px #38bdf8;
+  }
+
+  .log-line.success { color: #4ade80; text-shadow: 0 0 2px #4ade80; }
+  .log-line.warn { color: #fbbf24; text-shadow: 0 0 2px #fbbf24; }
+  .log-line.error { color: #f87171; text-shadow: 0 0 2px #f87171; }
+
+  /* Blinking terminal cursor */
+  .terminal-cursor {
+    display: inline-block;
+    width: 6px; height: 12px;
+    background: #38bdf8;
+    margin-left: 3px;
+    animation: cursor-blink 0.9s infinite;
+  }
+  @keyframes cursor-blink {
+    50% { opacity: 0; }
+  }
+
+  /* Success banner with neon checkmark */
+  .sync-success-screen {
+    text-align: center;
+    display: none;
+    animation: fadeIn 0.6s ease;
+  }
+
+  .success-glowing-icon {
+    font-size: 3rem;
+    color: var(--emerald);
+    background: rgba(16, 185, 129, 0.08);
+    width: 76px; height: 76px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 1.5rem;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    box-shadow: 0 0 30px rgba(16, 185, 129, 0.2);
+  }
+
+  /* Server Blade Rack Visualization */
+  .server-rack {
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1rem;
+    margin-top: 1.5rem;
+  }
+
+  .rack-blade {
+    height: 12px;
+    background: rgba(255,255,255,0.03);
+    border-radius: 4px;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    padding: 0 0.5rem;
+    justify-content: space-between;
+  }
+  .rack-blade:last-child { margin-bottom: 0; }
+
+  .blade-led {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: #475569;
+    transition: background 0.3s, box-shadow 0.3s;
+  }
+  .blade-led.active-led {
+    background: var(--indigo);
+    box-shadow: 0 0 6px var(--indigo);
+  }
+  .blade-led.complete-led {
+    background: var(--emerald);
+    box-shadow: 0 0 6px var(--emerald);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- ── Page Header ── -->
+<div class="page-header">
+  <div class="page-header-crumb">🛍️ Smart Retail Analytics</div>
+  <h1 class="text-gradient-moving font-weight-900">🗄️ Database Sync & Upload Center</h1>
+  <p>Update customer transactional profiles and synchronize models with your connected retail stores</p>
+</div>
+
+<div class="row g-4">
+  <!-- Left Side: Interactive Sync Core -->
+  <div class="col-lg-8">
+    
+    <!-- Upload card & Simulation Box -->
+    <div class="glass-card mb-4" style="background: rgba(10, 18, 36, 0.6);">
+      <div class="section-title"><i class="bi bi-cloud-arrow-up-fill"></i> Import Customer Dataset</div>
+      
+      <!-- Drag and Drop Box -->
+      <div class="upload-zone" id="uploadZone" onclick="triggerFileSelect()">
+        <input type="file" id="fileInput" class="d-none" accept=".csv" onchange="handleFileSelect(event)">
+        <div class="upload-icon">
+          <i class="bi bi-database-up"></i>
+        </div>
+        <div class="upload-title" id="uploadTitle">Drag & Drop customer_segments.csv here</div>
+        <div class="upload-sub">or click to browse local files (Supports CSV files up to 50MB)</div>
+        <button class="btn-primary-custom px-4 py-2 btn-glowing-neon" id="uploadBtn">
+          <i class="bi bi-filetype-csv me-2"></i>Select CSV Dataset
+        </button>
+      </div>
+
+      <!-- Simulated Progress Wizard -->
+      <div class="wizard-card mt-2" id="wizardCard">
+        <div class="wizard-title">
+          <i class="bi bi-cpu text-indigo animated spinner-border spinner-border-sm me-2" role="status" id="wizardSpinner"></i>
+          <span id="wizardStatusText">Processing Customer Transaction Database...</span>
+        </div>
+
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <div class="wizard-step-item pending" id="step1">
+              <div class="wizard-step-indicator">1</div>
+              <div>Validate CSV Headers & Schema</div>
+            </div>
+            <div class="wizard-step-item pending" id="step2">
+              <div class="wizard-step-indicator">2</div>
+              <div>Standardize RFM Features</div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="wizard-step-item pending" id="step3">
+              <div class="wizard-step-indicator">3</div>
+              <div>Recalculate K-Means Clustering</div>
+            </div>
+            <div class="wizard-step-item pending" id="step4">
+              <div class="wizard-step-indicator">4</div>
+              <div>Refresh Analytics Model Rules</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Simulated Progress Bar -->
+        <div class="seg-progress-wrap mb-4">
+          <div class="seg-progress-header">
+            <span id="progressPercentText" style="color:var(--text1); font-weight:700;">0% Complete</span>
+            <span id="progressRateText" style="color:var(--indigo); font-weight:700;">0 MB/s</span>
+          </div>
+          <div class="seg-progress-track">
+            <div class="seg-progress-fill" id="wizardProgressFill" style="width: 0%; background: linear-gradient(90deg, var(--indigo), var(--purple));"></div>
+          </div>
+        </div>
+
+        <!-- Terminal Logs -->
+        <div class="log-console" id="logConsole">
+          <div class="log-line">[SYSTEM] Awaiting input stream...<span class="terminal-cursor"></span></div>
+        </div>
+
+        <!-- Server Blade LED Simulation -->
+        <div class="server-rack">
+          <div style="font-size:0.6rem; color:var(--text3); text-transform:uppercase; font-weight:700; margin-bottom:0.5rem;"><i class="bi bi-server me-1"></i>Secure Cluster Compute blades</div>
+          <div class="rack-blade">
+            <span style="font-size:0.62rem; color:var(--text2);">Blade Node #01 (Integrity Check)</span>
+            <div class="blade-led" id="led1"></div>
+          </div>
+          <div class="rack-blade">
+            <span style="font-size:0.62rem; color:var(--text2);">Blade Node #02 (Feature Standardizer)</span>
+            <div class="blade-led" id="led2"></div>
+          </div>
+          <div class="rack-blade">
+            <span style="font-size:0.62rem; color:var(--text2);">Blade Node #03 (K-Means Clustering Engine)</span>
+            <div class="blade-led" id="led3"></div>
+          </div>
+          <div class="rack-blade">
+            <span style="font-size:0.62rem; color:var(--text2);">Blade Node #04 (Recommendation Compiler)</span>
+            <div class="blade-led" id="led4"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Success Screen -->
+      <div class="sync-success-screen py-4" id="successScreen">
+        <div class="success-glowing-icon">
+          <i class="bi bi-check-lg"></i>
+        </div>
+        <h3 class="text-white font-weight-800 mb-2">Sync Process Completed!</h3>
+        <p class="text-muted fs-8 mb-4 max-w-lg mx-auto" style="line-height:1.6;">
+          Customer transactions have been parsed, K-Means profiles refreshed, and Plotly analytics recalculated successfully for organization instance.
+        </p>
+        
+        <div class="row justify-content-center mb-4">
+          <div class="col-sm-4">
+            <div class="px-2 py-3" style="background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 12px;">
+              <div class="text-white font-weight-700 fs-7" id="successRecords">4,372</div>
+              <div style="font-size:0.65rem; color:var(--text3); text-transform:uppercase;">Rows Synced</div>
+            </div>
+          </div>
+          <div class="col-sm-4">
+            <div class="px-2 py-3" style="background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 12px;">
+              <div class="text-white font-weight-700 fs-7" id="successVIPs">1,210</div>
+              <div style="font-size:0.65rem; color:var(--text3); text-transform:uppercase;">VIP Segment</div>
+            </div>
+          </div>
+          <div class="col-sm-4">
+            <div class="px-2 py-3" style="background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 12px;">
+              <div class="text-white font-weight-700 fs-7" id="successDuration">1.82s</div>
+              <div style="font-size:0.65rem; color:var(--text3); text-transform:uppercase;">Sync Speed</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="d-flex justify-content-center gap-2">
+          <a href="{{ url_for('dashboard') }}" class="btn-primary-custom px-4 py-2 btn-glowing-neon">
+            <i class="bi bi-speedometer2 me-2"></i>Go to Dashboard
+          </a>
+          <button class="btn-primary-custom px-4 py-2" style="background: transparent; border: 1px solid rgba(255,255,255,0.1); box-shadow: none;" onclick="resetSync()">
+            Sync Another File
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Integrations Racks Row -->
+    <div class="row g-3">
+      <!-- Shopify Card -->
+      <div class="col-md-4">
+        <div class="sync-card">
+          <div class="sync-header">
+            <div class="sync-logo">
+              <i class="bi bi-bag-heart-fill" style="color: #96bf48;"></i>
+              <span>Shopify</span>
+            </div>
+            <span class="sync-badge connected" id="shopifyBadge">Active</span>
+          </div>
+          <div class="sync-details">
+            Connected to <strong>apex-global.myshopify.com</strong>.<br>
+            Last automatic fetch: Today at 11:34 AM.
+          </div>
+          <button class="btn-primary-custom w-100 py-2 fs-8 btn-glowing-neon" onclick="runSimulatedSync('Shopify Integration Api')">
+            <i class="bi bi-arrow-repeat me-1"></i>Sync Now
+          </button>
+        </div>
+      </div>
+      <!-- Square Card -->
+      <div class="col-md-4">
+        <div class="sync-card">
+          <div class="sync-header">
+            <div class="sync-logo">
+              <i class="bi bi-app" style="color: #fff;"></i>
+              <span>Square Sync</span>
+            </div>
+            <span class="sync-badge connected" id="squareBadge">Active</span>
+          </div>
+          <div class="sync-details">
+            Connected to POS terminal array in region US-EAST-01.<br>
+            Last fetch: Yesterday at 06:12 PM.
+          </div>
+          <button class="btn-primary-custom w-100 py-2 fs-8 btn-glowing-neon" onclick="runSimulatedSync('Square Terminal Feed')">
+            <i class="bi bi-arrow-repeat me-1"></i>Sync Now
+          </button>
+        </div>
+      </div>
+      <!-- WooCommerce Card -->
+      <div class="col-md-4">
+        <div class="sync-card">
+          <div class="sync-header">
+            <div class="sync-logo">
+              <i class="bi bi-cart-fill" style="color: #96588a;"></i>
+              <span>WooCommerce</span>
+            </div>
+            <span class="sync-badge disconnected" id="wooBadge">Disabled</span>
+          </div>
+          <div class="sync-details">
+            Direct API hook is currently offline or credentials expired.<br>
+            Configure authentication endpoint.
+          </div>
+          <button class="btn-primary-custom w-100 py-2 fs-8" style="background: transparent; border: 1px solid rgba(255,255,255,0.08); box-shadow: none;" onclick="quickEnableWoo()">
+            <i class="bi bi-link-45deg me-1"></i>Configure Sync
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Right Side: Org Details & History Log -->
+  <div class="col-lg-4">
+    <!-- Active Store card -->
+    <div class="glass-card mb-4" style="background: rgba(10, 18, 36, 0.65);">
+      <div class="section-title"><i class="bi bi-hdd-network-fill"></i> Instance Terminal Info</div>
+      
+      <div class="stat-row">
+        <span class="stat-lbl">Active Retailer</span>
+        <span class="stat-val text-white" id="orgName">Apex Retail Group</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-lbl">Access ID</span>
+        <span class="stat-val text-indigo" id="orgEmail">manager@apexretail.com</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-lbl">Secure Node API Key</span>
+        <span class="stat-val font-monospace" style="font-size:0.75rem;">pk_live_82a...98f4</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-lbl">Auto-Sync Sync</span>
+        <span class="stat-val text-emerald"><i class="bi bi-clock-history me-1"></i>Every 6 Hours</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-lbl">Encryption Core</span>
+        <span class="stat-val text-muted">AES-GCM-256</span>
+      </div>
+    </div>
+
+    <!-- History list -->
+    <div class="glass-card" style="background: rgba(10, 18, 36, 0.65);">
+      <div class="section-title"><i class="bi bi-journal-text"></i> Recent Sync History</div>
+      
+      <div class="table-responsive">
+        <table class="table-dark-custom" style="font-size:0.76rem;">
+          <thead>
+            <tr>
+              <th>Date & Time</th>
+              <th>Source</th>
+              <th>Rows</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="historyLogBody">
+            <tr>
+              <td class="text-nowrap text-muted">06-12 11:34 AM</td>
+              <td>Shopify Sync</td>
+              <td class="text-white">4,372</td>
+              <td><span class="text-emerald font-weight-600">Success</span></td>
+            </tr>
+            <tr>
+              <td class="text-nowrap text-muted">06-12 08:27 AM</td>
+              <td>Local Import</td>
+              <td class="text-white">4,290</td>
+              <td><span class="text-emerald font-weight-600">Success</span></td>
+            </tr>
+            <tr>
+              <td class="text-nowrap text-muted">06-11 05:12 PM</td>
+              <td>Square Sync</td>
+              <td class="text-white">4,360</td>
+              <td><span class="text-emerald font-weight-600">Success</span></td>
+            </tr>
+            <tr>
+              <td class="text-nowrap text-muted">06-10 11:15 AM</td>
+              <td>Shopify Sync</td>
+              <td class="text-white">4,354</td>
+              <td><span class="text-emerald font-weight-600">Success</span></td>
+            </tr>
+            <tr>
+              <td class="text-nowrap text-muted">06-09 09:30 AM</td>
+              <td>Manual Import</td>
+              <td class="text-white">4,110</td>
+              <td><span class="text-rose font-weight-600">Failed</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block page_scripts %}
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const org = localStorage.getItem('retailer_org') || "Apex Retail Group";
+    const email = localStorage.getItem('retailer_email') || "manager@apexretail.com";
+    
+    document.getElementById('orgName').textContent = org;
+    document.getElementById('orgEmail').textContent = email;
+  });
+
+  const uploadZone = document.getElementById('uploadZone');
+  
+  ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+    uploadZone.addEventListener(eventName, preventDefaults, false);
+  });
+
+  function preventDefaults (e) {
+    e.preventDefault();
+    e.stopPropagation();
+  }
+
+  ['dragenter', 'dragover'].forEach(eventName => {
+    uploadZone.addEventListener(eventName, () => uploadZone.classList.add('dragover'), false);
+  });
+
+  ['dragleave', 'drop'].forEach(eventName => {
+    uploadZone.addEventListener(eventName, () => uploadZone.classList.remove('dragover'), false);
+  });
+
+  uploadZone.addEventListener('drop', handleDrop, false);
+
+  function handleDrop(e) {
+    const dt = e.dataTransfer;
+    const files = dt.files;
+    if (files.length > 0) {
+      startSyncSimulation(files[0].name, 'CSV Manual Import');
+    }
+  }
+
+  function triggerFileSelect() {
+    document.getElementById('fileInput').click();
+  }
+
+  function handleFileSelect(e) {
+    const files = e.target.files;
+    if (files.length > 0) {
+      startSyncSimulation(files[0].name, 'CSV Manual Import');
+    }
+  }
+
+  function runSimulatedSync(sourceName) {
+    startSyncSimulation('Retailer Cloud Database Feed', sourceName);
+  }
+
+  function quickEnableWoo() {
+    const opt = confirm("Would you like to connect to WooCommerce API and sync customer segments?");
+    if (opt) {
+      const wooBadge = document.getElementById('wooBadge');
+      wooBadge.textContent = "Connecting...";
+      wooBadge.className = "sync-badge connected";
+      setTimeout(() => {
+        wooBadge.textContent = "Active";
+        runSimulatedSync('WooCommerce Endpoint API');
+      }, 800);
+    }
+  }
+
+  let logTimer = null;
+  let progressTimer = null;
+
+  function startSyncSimulation(fileName, source) {
+    uploadZone.style.display = 'none';
+    const wizard = document.getElementById('wizardCard');
+    wizard.style.display = 'block';
+
+    const step1 = document.getElementById('step1');
+    const step2 = document.getElementById('step2');
+    const step3 = document.getElementById('step3');
+    const step4 = document.getElementById('step4');
+
+    const led1 = document.getElementById('led1');
+    const led2 = document.getElementById('led2');
+    const led3 = document.getElementById('led3');
+    const led4 = document.getElementById('led4');
+    
+    const consoleLogs = document.getElementById('logConsole');
+    consoleLogs.innerHTML = `<div class="log-line text-white">[SYSTEM] Initializing sync routine...</div>`;
+
+    const progressFill = document.getElementById('wizardProgressFill');
+    const progressPercent = document.getElementById('progressPercentText');
+    const progressRate = document.getElementById('progressRateText');
+    const statusText = document.getElementById('wizardStatusText');
+
+    let percent = 0;
+    let rate = 3.2;
+
+    const logMessages = [
+      { t: 200, m: `[INFO] Connection established with ${source}.`, c: 'info' },
+      { t: 400, m: `[INFO] Reading source input file: ${fileName}`, c: 'info' },
+      { t: 700, m: `[INFO] Parsing record arrays (CSV delimiter: ',')...`, c: 'info' },
+      { t: 1000, m: `[SUCCESS] Loaded 4,372 retail customer records.`, c: 'success' },
+      { t: 1200, m: `[INFO] Checking data types and integrity: CustomerID, Recency, Frequency, Monetary.`, c: 'info' },
+      { t: 1500, m: `[INFO] Standardizing features for clustering model input...`, c: 'info' },
+      { t: 1800, m: `[INFO] Initiating Unsupervised Machine Learning clustering...`, c: 'info' },
+      { t: 2000, m: `[INFO] Running K-Means (K=3, Random State=99, Max Iterations=300)...`, c: 'info' },
+      { t: 2300, m: `[SUCCESS] Converged in 14 iterations. Recalculated segment weights: VIP: 27.6%, Regular: 47.9%, At Risk: 24.5%`, c: 'success' },
+      { t: 2500, m: `[INFO] Overwriting kmeans_model.pkl and caching updated rules...`, c: 'info' },
+      { t: 2700, m: `[SUCCESS] Model rules file recommendation_rules.csv successfully verified.`, c: 'success' },
+      { t: 2900, m: `[SYSTEM] Rebuilding Plotly dashboard charts in memory...`, c: 'info' },
+      { t: 3100, m: `[SUCCESS] Sync successfully compiled. Overwriting active cache.`, c: 'success' }
+    ];
+
+    // Log printing
+    logMessages.forEach(msg => {
+      setTimeout(() => {
+        const line = document.createElement('div');
+        line.className = 'log-line ' + (msg.c || '');
+        line.textContent = msg.m;
+        
+        // Remove existing cursor, append line, then append cursor
+        const cursor = consoleLogs.querySelector('.terminal-cursor');
+        if (cursor) cursor.remove();
+        
+        consoleLogs.appendChild(line);
+        
+        const nextCursor = document.createElement('span');
+        nextCursor.className = 'terminal-cursor';
+        consoleLogs.appendChild(nextCursor);
+        
+        consoleLogs.scrollTop = consoleLogs.scrollHeight;
+      }, msg.t);
+    });
+
+    // Progress updates
+    const totalDuration = 3200;
+    const intervalTime = 50;
+    
+    progressTimer = setInterval(() => {
+      percent += (intervalTime / totalDuration) * 100;
+      if (percent >= 100) {
+        percent = 100;
+        clearInterval(progressTimer);
+      }
+      
+      progressFill.style.width = percent + '%';
+      progressPercent.textContent = Math.round(percent) + '% Complete';
+      
+      rate = (3.0 + Math.random() * 2.5).toFixed(1);
+      progressRate.textContent = rate + ' MB/s';
+
+      // Activate steps based on percentage
+      if (percent >= 0 && percent < 25) {
+        statusText.textContent = "Parsing customer logs & structure...";
+        step1.className = "wizard-step-item active";
+        led1.className = "blade-led active-led";
+      } else if (percent >= 25 && percent < 50) {
+        step1.className = "wizard-step-item complete";
+        led1.className = "blade-led complete-led";
+        step2.className = "wizard-step-item active";
+        led2.className = "blade-led active-led";
+        statusText.textContent = "Extracting Recency, Frequency, and Monetary parameters...";
+      } else if (percent >= 50 && percent < 75) {
+        step2.className = "wizard-step-item complete";
+        led2.className = "blade-led complete-led";
+        step3.className = "wizard-step-item active";
+        led3.className = "blade-led active-led";
+        statusText.textContent = "Calculating K-Means customer clusters...";
+      } else if (percent >= 75 && percent < 100) {
+        step3.className = "wizard-step-item complete";
+        led3.className = "blade-led complete-led";
+        step4.className = "wizard-step-item active";
+        led4.className = "blade-led active-led";
+        statusText.textContent = "Caching Plotly visualizations and metrics...";
+      } else if (percent >= 100) {
+        step4.className = "wizard-step-item complete";
+        led4.className = "blade-led complete-led";
+        statusText.textContent = "Sync Complete!";
+        
+        setTimeout(() => {
+          showSuccessScreen(source);
+        }, 300);
+      }
+    }, intervalTime);
+  }
+
+  function showSuccessScreen(source) {
+    document.getElementById('wizardCard').style.display = 'none';
+    document.getElementById('successScreen').style.display = 'block';
+
+    const body = document.getElementById('historyLogBody');
+    const tr = document.createElement('tr');
+    
+    const now = new Date();
+    const dateStr = `${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')} ${now.getHours() >= 12 ? 'PM' : 'AM'}`;
+
+    tr.innerHTML = `
+      <td class="text-nowrap text-white" style="background: rgba(16,185,129,0.04);">${dateStr}</td>
+      <td class="text-indigo" style="background: rgba(16,185,129,0.04);">${source}</td>
+      <td class="text-white" style="background: rgba(16,185,129,0.04);">4,372</td>
+      <td style="background: rgba(16,185,129,0.04);"><span class="text-emerald font-weight-600">Success</span></td>
+    `;
+    body.insertBefore(tr, body.firstChild);
+  }
+
+  function resetSync() {
+    document.getElementById('successScreen').style.display = 'none';
+    uploadZone.style.display = 'block';
+    
+    ['step1', 'step2', 'step3', 'step4'].forEach(id => {
+      document.getElementById(id).className = "wizard-step-item pending";
+    });
+    ['led1', 'led2', 'led3', 'led4'].forEach(id => {
+      document.getElementById(id).className = "blade-led";
+    });
+    
+    document.getElementById('wizardProgressFill').style.width = '0%';
+    document.getElementById('progressPercentText').textContent = '0% Complete';
+    document.getElementById('progressRateText').textContent = '0 MB/s';
+    document.getElementById('fileInput').value = '';
+  }
+</script>
+{% endblock %}

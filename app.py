@@ -199,9 +199,17 @@ def inject_sidebar_stats():
 
 
 # ═══════════════════════════════════════════════════════════════════════════
-# ROUTE  1 — DASHBOARD
+# ROUTE  0 — LANDING HOME PAGE
 # ═══════════════════════════════════════════════════════════════════════════
 @app.route("/")
+def index():
+    return render_template("home.html")
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# ROUTE  1 — DASHBOARD
+# ═══════════════════════════════════════════════════════════════════════════
+@app.route("/dashboard")
 def dashboard():
     df = DF_CUSTOMERS
     if df.empty:
@@ -731,6 +739,16 @@ def analytics():
         chart_tree=to_json(fig_tree),
         chart_bkt=to_json(fig_bkt),
     )
+
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    return render_template("login.html")
+
+
+@app.route("/update-db", methods=["GET", "POST"])
+def update_db():
+    return render_template("update_db.html")
 
 
 if __name__ == "__main__":
