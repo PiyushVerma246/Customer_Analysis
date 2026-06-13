@@ -38,28 +38,28 @@ SEGMENT_COLORS = {
 _PLOTLY_BASE = dict(
     paper_bgcolor="rgba(0,0,0,0)",
     plot_bgcolor="rgba(0,0,0,0)",
-    font=dict(family="Inter, sans-serif", color="#64748b", size=12),
-    margin=dict(l=10, r=10, t=52, b=10),
-    title_font=dict(color="#e2e8f0", size=14, family="Inter, sans-serif"),
+    font=dict(family="Inter, sans-serif", color="#94a3b8", size=13),
+    margin=dict(l=60, r=60, t=60, b=60),
+    title_font=dict(color="#e2e8f0", size=15, family="Inter, sans-serif"),
     hoverlabel=dict(
         bgcolor="rgba(8,14,26,0.96)",
         bordercolor="rgba(99,102,241,0.45)",
-        font=dict(family="Inter, sans-serif", color="#f8fafc", size=12),
+        font=dict(family="Inter, sans-serif", color="#f8fafc", size=13),
     ),
 )
 
 _AXIS = dict(
-    gridcolor="rgba(255,255,255,0.04)",
-    linecolor="rgba(255,255,255,0.06)",
-    zerolinecolor="rgba(255,255,255,0.04)",
-    tickfont=dict(color="#64748b"),
+    gridcolor="rgba(255,255,255,0.07)",
+    linecolor="rgba(255,255,255,0.10)",
+    zerolinecolor="rgba(255,255,255,0.07)",
+    tickfont=dict(color="#94a3b8", size=12),
 )
 
 _LEGEND = dict(
     bgcolor="rgba(8,14,26,0.88)",
     bordercolor="rgba(255,255,255,0.07)",
     borderwidth=1,
-    font=dict(color="#94a3b8", size=11),
+    font=dict(color="#cbd5e1", size=12),
 )
 
 
@@ -254,16 +254,17 @@ def dashboard():
 
     # ── Revenue bar chart ──────────────────────────────────────────────────
     rev_df = df.groupby("Segment")["Monetary"].sum().reset_index()
-    rev_df.columns = ["Segment", "Revenue"]
-    rev_df = rev_df.sort_values("Revenue", ascending=False)
+    rev_df.columns = ["Segment", "Total Sales (£)"]
+    rev_df = rev_df.sort_values("Total Sales (£)", ascending=False)
     fig_rev = px.bar(
-        rev_df, x="Segment", y="Revenue",
+        rev_df, x="Segment", y="Total Sales (£)",
         color="Segment", color_discrete_map=SEGMENT_COLORS,
-        title="Total Revenue by Customer Segment",
-        text=rev_df["Revenue"].map(lambda v: f"£{v:,.0f}"),
+        title="💰 Total Sales Revenue by Customer Group",
+        text=rev_df["Total Sales (£)"].map(lambda v: f"£{v:,.0f}"),
     )
-    fig_rev.update_traces(textposition="outside", marker_line_width=0, width=0.45)
-    fig_rev.update_layout(**_layout(height=300, showlegend=False, yaxis_title="Revenue (£)"))
+    fig_rev.update_traces(textposition="outside", marker_line_width=0, width=0.45,
+                          textfont=dict(color="#f1f5f9", size=12))
+    fig_rev.update_layout(**_layout(height=340, showlegend=False, yaxis_title="Total Sales (£)"))
 
     # ── Summary statistics ─────────────────────────────────────────────────
     summary = (
@@ -579,45 +580,62 @@ def analytics():
     fig_pie = px.pie(
         seg_counts, values="Count", names="Segment",
         color="Segment", color_discrete_map=SEGMENT_COLORS,
-        title="Customer Segment Distribution", hole=0.48,
+        title="👥 How Your Customers Are Grouped", hole=0.48,
     )
     fig_pie.update_traces(
         textinfo="label+percent+value",
-        hovertemplate="<b>%{label}</b><br>%{value:,} (%{percent})<extra></extra>",
+        textfont=dict(size=13, color="#f8fafc"),
+        hovertemplate="<b>%{label}</b><br>%{value:,} customers (%{percent})<extra></extra>",
         pull=[0.04 if s == "At Risk" else 0 for s in seg_counts["Segment"]],
     )
-    fig_pie.update_layout(**_layout_no_xy(height=400))
+    fig_pie.update_layout(**_layout_no_xy(height=420))
 
     # 2. Top 10 customers
     top10 = df.nlargest(10, "Monetary")[["CustomerID", "Monetary", "Segment"]].copy()
-    top10["CustomerID"] = top10["CustomerID"].astype(str)
+    top10["CustomerID"] = "Customer " + top10["CustomerID"].astype(str)
     top10 = top10.sort_values("Monetary", ascending=True)
     fig_top = px.bar(
         top10, x="Monetary", y="CustomerID", orientation="h",
         color="Segment", color_discrete_map=SEGMENT_COLORS,
-        title="Top 10 Customers by Lifetime Value",
+        title="🏆 Your Top 10 Highest-Spending Customers",
+        labels={"Monetary": "Total Spend (£)", "CustomerID": "Customer"},
         text=top10["Monetary"].map("£{:,.0f}".format),
     )
-    fig_top.update_traces(textposition="outside", marker_line_width=0)
-    fig_top.update_layout(**_layout(height=400))
+    fig_top.update_traces(textposition="outside", marker_line_width=0,
+                          textfont=dict(color="#f1f5f9", size=12))
+    fig_top.update_layout(**_layout(height=420, xaxis_title="Total Spend (£)", yaxis_title="Customer"))
 
     # 3. Recency histogram
     fig_rec = px.histogram(
         df, x="Recency", color="Segment", color_discrete_map=SEGMENT_COLORS,
-        nbins=40, title="Recency Distribution (days since last purchase)",
-        barmode="overlay", opacity=0.78,
+        nbins=40,
+        title="📅 How Recently Customers Shopped (Days Since Last Purchase)",
+        labels={"Recency": "Days Since Last Purchase", "count": "Number of Customers",
+                "Segment": "Customer Group"},
+        barmode="overlay", opacity=0.82,
     )
-    fig_rec.update_layout(**_layout(height=360, bargap=0.03))
+    fig_rec.update_layout(**_layout(
+        height=380, bargap=0.03,
+        xaxis_title="Days Since Last Purchase",
+        yaxis_title="Number of Customers",
+    ))
 
     # 4. Frequency histogram
     freq_cap = df["Frequency"].quantile(0.99)
     fig_frq = px.histogram(
         df[df["Frequency"] <= freq_cap],
         x="Frequency", color="Segment", color_discrete_map=SEGMENT_COLORS,
-        nbins=35, title="Frequency Distribution (capped at 99th percentile)",
-        barmode="overlay", opacity=0.78,
+        nbins=35,
+        title="🔁 How Often Customers Purchase (Visits per Customer)",
+        labels={"Frequency": "Number of Purchases", "count": "Number of Customers",
+                "Segment": "Customer Group"},
+        barmode="overlay", opacity=0.82,
     )
-    fig_frq.update_layout(**_layout(height=360, bargap=0.03))
+    fig_frq.update_layout(**_layout(
+        height=380, bargap=0.03,
+        xaxis_title="Number of Purchases",
+        yaxis_title="Number of Customers",
+    ))
 
     # 5. Monetary box
     mon_cap = df["Monetary"].quantile(0.97)
@@ -625,63 +643,89 @@ def analytics():
         df[df["Monetary"] <= mon_cap],
         x="Segment", y="Monetary",
         color="Segment", color_discrete_map=SEGMENT_COLORS,
-        title="Monetary Value Distribution by Segment", points="outliers",
+        title="💷 Typical Spend Range by Customer Group",
+        labels={"Monetary": "Total Spend (£)", "Segment": "Customer Group"},
+        points="outliers",
     )
     fig_box.update_traces(marker_size=4, line_width=1.8)
-    fig_box.update_layout(**_layout(height=400, showlegend=False))
+    fig_box.update_layout(**_layout(
+        height=420, showlegend=False,
+        xaxis_title="Customer Group",
+        yaxis_title="Total Spend (£)",
+    ))
 
     # 6. Scatter
     df_samp = df.sample(min(1800, len(df)), random_state=42)
     fig_scat = px.scatter(
         df_samp, x="Recency", y="Monetary",
         color="Segment", color_discrete_map=SEGMENT_COLORS,
-        size="Frequency", size_max=20, opacity=0.70,
-        title="Recency vs Monetary Value (bubble = Frequency)",
+        size="Frequency", size_max=20, opacity=0.72,
+        title="🔍 Recency vs. Total Spend — Bubble Size = How Often They Buy",
+        labels={
+            "Recency": "Days Since Last Purchase",
+            "Monetary": "Total Spend (£)",
+            "Frequency": "Times Purchased",
+            "Segment": "Customer Group",
+        },
     )
-    fig_scat.update_layout(**_layout(height=460))
+    fig_scat.update_layout(**_layout(
+        height=480,
+        xaxis_title="Days Since Last Purchase",
+        yaxis_title="Total Spend (£)",
+    ))
 
     # 7. Treemap
     top20 = df.nlargest(20, "Monetary").copy()
-    top20["CID"] = top20["CustomerID"].astype(str)
+    top20["CID"] = "Customer " + top20["CustomerID"].astype(str)
     fig_tree = px.treemap(
         top20, path=["Segment", "CID"], values="Monetary",
         color="Monetary",
         color_continuous_scale=["#1e1b4b", "#6366f1", "#a855f7"],
-        title="Top-20 Customers — Revenue Contribution",
+        title="🗺️ Top 20 Customers — Who Contributes the Most Revenue",
+        labels={"Monetary": "Total Spend (£)"},
+    )
+    fig_tree.update_traces(
+        hovertemplate="<b>%{label}</b><br>Total Spend: £%{value:,.0f}<extra></extra>"
     )
     fig_tree.update_layout(
-        height=440,
+        height=460,
         paper_bgcolor="rgba(0,0,0,0)",
-        font=dict(family="Inter", color="#f8fafc"),
-        margin=dict(l=10, r=10, t=52, b=10),
-        title_font=dict(color="#e2e8f0", size=14),
+        font=dict(family="Inter", color="#f8fafc", size=13),
+        margin=dict(l=20, r=20, t=65, b=20),
+        title_font=dict(color="#e2e8f0", size=15),
         coloraxis_colorbar=dict(
-            tickfont=dict(color="#94a3b8"),
-            title_font=dict(color="#94a3b8"),
+            title="Spend (£)",
+            tickfont=dict(color="#cbd5e1", size=11),
+            title_font=dict(color="#cbd5e1"),
         ),
     )
 
     # 8. Freq bucket bar
     df_bkt = df.copy()
-    df_bkt["Freq Bucket"] = pd.cut(
+    df_bkt["Purchases Made"] = pd.cut(
         df_bkt["Frequency"],
         bins=[0, 2, 5, 10, 20, df_bkt["Frequency"].max() + 1],
-        labels=["1–2", "3–5", "6–10", "11–20", "20+"],
+        labels=["1–2 times", "3–5 times", "6–10 times", "11–20 times", "20+ times"],
     )
     avg_mon = (
-        df_bkt.groupby("Freq Bucket", observed=True)["Monetary"]
+        df_bkt.groupby("Purchases Made", observed=True)["Monetary"]
         .mean().reset_index()
     )
-    avg_mon.columns = ["Frequency Bucket", "Avg Monetary (£)"]
+    avg_mon.columns = ["Purchases Made", "Avg Total Spend (£)"]
     fig_bkt = px.bar(
-        avg_mon, x="Frequency Bucket", y="Avg Monetary (£)",
-        color="Avg Monetary (£)",
+        avg_mon, x="Purchases Made", y="Avg Total Spend (£)",
+        color="Avg Total Spend (£)",
         color_continuous_scale=["#3b82f6", "#6366f1", "#a855f7"],
-        title="Avg Lifetime Value by Purchase Frequency Bucket",
-        text=avg_mon["Avg Monetary (£)"].map("£{:,.0f}".format),
+        title="📈 Do Loyal Customers Spend More? Average Spend by Visit Frequency",
+        text=avg_mon["Avg Total Spend (£)"].map("£{:,.0f}".format),
     )
-    fig_bkt.update_traces(textposition="outside", marker_line_width=0, width=0.52)
-    fig_bkt.update_layout(**_layout(height=360, showlegend=False, coloraxis_showscale=False))
+    fig_bkt.update_traces(textposition="outside", marker_line_width=0, width=0.52,
+                          textfont=dict(color="#f1f5f9", size=12))
+    fig_bkt.update_layout(**_layout(
+        height=400, showlegend=False, coloraxis_showscale=False,
+        xaxis_title="How Many Times They've Purchased",
+        yaxis_title="Average Total Spend (£)",
+    ))
 
     return render_template(
         "analytics.html",
