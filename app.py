@@ -21,6 +21,8 @@ import plotly.express as px
 import plotly.graph_objects as go
 from flask import Flask, render_template, request
 
+from nba_engine import NBAEngine
+
 warnings.filterwarnings("ignore")
 
 app = Flask(__name__)
@@ -120,6 +122,7 @@ def _load_data():
 
 # Load once at startup
 DF_CUSTOMERS, DF_RULES, KMEANS_MODEL = _load_data()
+NBA_ENGINE = NBAEngine(DF_CUSTOMERS, DF_RULES)
 
 
 # ── Utilities ──────────────────────────────────────────────────────────────
@@ -510,7 +513,51 @@ def recommendations():
 
 
 # ═══════════════════════════════════════════════════════════════════════════
-# ROUTE  4 — ANALYTICS
+# ROUTE  4 — NEXT BEST ACTION
+# ═══════════════════════════════════════════════════════════════════════════
+@app.route("/nba", methods=["GET", "POST"])
+def nba_route():
+    customer_id = None
+    customer_details = None
+    actions = []
+    error = None
+
+    if request.method == "POST":
+        raw_id = request.form.get("customer_id", "").strip()
+        if not raw_id:
+            error = "Please enter a Customer ID."
+        else:
+            try:
+                customer_id = int(float(raw_id))
+                row_df = DF_CUSTOMERS[DF_CUSTOMERS["CustomerID"] == customer_id]
+                
+                if row_df.empty:
+                    error = f"Customer ID {customer_id} not found."
+                else:
+                    cust = row_df.iloc[0]
+                    customer_details = {
+                        "id": customer_id,
+                        "segment": cust["Segment"],
+                        "recency": int(cust["Recency"]),
+                        "frequency": int(cust["Frequency"]),
+                        "monetary": fmt_gbp(cust["Monetary"])
+                    }
+                    actions = NBA_ENGINE.get_actions(customer_id)
+            except ValueError:
+                error = "Invalid Customer ID format."
+
+    return render_template(
+        "nba.html",
+        active_page="nba",
+        customer_id=customer_id,
+        customer=customer_details,
+        actions=actions,
+        error=error
+    )
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# ROUTE  5 — ANALYTICS
 # ═══════════════════════════════════════════════════════════════════════════
 @app.route("/analytics")
 def analytics():
